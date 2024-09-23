@@ -60,5 +60,4 @@ def main():
     combined_df.to_csv("ufc_combined_money_921_date.csv")
 
 if __name__ == "__main__":
-    # Find bets for a UFC event
     main()
