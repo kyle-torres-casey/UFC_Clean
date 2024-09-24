@@ -89,6 +89,7 @@ def find_bets(odds, fights, probabilities):
     winnings = 0
 
     print("starting money ", total_money)
+    bets = []
     for i in range(len(odds)):
         # Get probabilities and odds
         prob = probabilities[i]
@@ -105,6 +106,7 @@ def find_bets(odds, fights, probabilities):
         f = (b*prob - 1 + prob)/b
         print("Percent to bet ", f)
         bet = f*total_money/100
+        bets.append(bet)
         print("Bet ", bet)
 
         if (prob >= 0.5).astype(int) ==  fights['Winner'].to_list()[i]:
@@ -115,6 +117,7 @@ def find_bets(odds, fights, probabilities):
             winnings -= bet
         
     print("winnings ", winnings)
+    return bets
 
 def calc_stat_importance(odds):
     # Assuming you have a DataFrame called df with your features and target variable
@@ -214,7 +217,6 @@ def main(event):
 
     # Edit data for odds/fights
     edit_data(odds)
-    # odds.to_csv("fight_stats_diff_922.csv")
 
     # Predict fights
     X_train_scaled, X_train, y_train, logreg, y_pred, X_test, y_test = predict_fights(odds)
@@ -231,7 +233,7 @@ def main(event):
     probabilities = find_probabilities(logreg, X_train_scaled, X_train, y_train, X_predict)
 
     # Find bets
-    find_bets(odds_predict, fights_predict, probabilities)
+    bets = find_bets(odds_predict, fights_predict, probabilities)
 
 # Entry point of the script
 if __name__ == "__main__":
