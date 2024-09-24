@@ -25,13 +25,12 @@ def find_probabilities(logreg, X_train_scaled, X_train, y_train, X_predict):
     coef_df['AbsCoefficient'] = coef_df['Coefficient'].abs()  # Absolute value for comparison
     coef_df = coef_df.sort_values(by='AbsCoefficient', ascending=False)
 
+    # Step 1: Get intercept
     intercept = logreg.intercept_
-
-    # coef_df.to_csv("coefficients_922_new.csv")
-
     # Step 2: Calculate logits
     logits = intercept + np.dot(X_predict, coefficients)
     # Step 3: Convert logits to probabilities using the logistic function
+
     return 1 / (1 + np.exp(-logits))
 
 def plot_auc(X_test, y_test, logreg):
@@ -86,37 +85,60 @@ def predict_fights(odds):
 
 def find_bets(odds, fights, probabilities):
     total_money = 100
-    winnings = 0
-
-    print("starting money ", total_money)
+    profit = 0
     bets = []
+    winnings = []
+
+    print("actual winners ",fights['Winner'].to_list())
+    print("probabilities ", probabilities)
+    print("starting money ", total_money)
     for i in range(len(odds)):
+        print("")
         # Get probabilities and odds
         prob = probabilities[i]
         odd1 = odds.iloc[i]['Fighter 1 Odds']
         odd2 = odds.iloc[i]['Fighter 2 Odds']
+        print("odd1 ", odd1)
+        print("odd2 ", odd2)
 
         # Find decimal odds for who to bet on
         if (prob >= 0.5).astype(int):
-            b = 1+ (odd1/100)
+            print("predction: winner=1")
+            dec_odds = -100.0/odd1 + 1.0 if odd1 < 0.0 else odd1/100.0 + 1.0
+            my_winner = 1
         else:
-            b = 1 + (odd2/100)
+            print("predction: winner=0")
+            dec_odds = -100.0/odd2 + 1.0 if odd2 < 0 else odd2/100.0 + 1.0
+            my_winner = 0
+            prob = 1 - prob
+        
+        print("my winner prob ", prob)
+        print("decimal odds ", dec_odds)
         
         # Calculate percentage bet
-        f = (b*prob - 1 + prob)/b
-        print("Percent to bet ", f)
-        bet = f*total_money/100
+        # fraction = (dec_odds*prob - 1 + prob)/dec_odds
+        fraction = prob - (1-prob)/(dec_odds-1)
+        print("Percent to bet ", fraction)
+
+        bet = fraction*total_money
+        if bet < 0:
+            print("bet is negative so don't bet, too risky ", bet)
+            bet = 0
         bets.append(bet)
         print("Bet ", bet)
 
-        if (prob >= 0.5).astype(int) ==  fights['Winner'].to_list()[i]:
-            print("money won ", bet)
-            winnings += bet
+        if my_winner == fights['Winner'].to_list()[i]:
+            money_won = bet*dec_odds - bet
+            print("money won ", money_won)
+            profit += money_won
         else:
-            print("money lost ", bet)
-            winnings -= bet
+            money_won = -bet
+            print("money lost ", money_won)
+            profit += money_won
+
+        winnings.append(money_won)
         
-    print("winnings ", winnings)
+    print("profit ", profit)
     return bets
 
 def calc_stat_importance(odds):
@@ -203,13 +225,13 @@ def edit_data(fights):
 # This is the main function
 def main(event):
     # Get odds csv and drop useless columns
-    odds = pd.read_csv("ufc_combined_money_921_date.csv", index_col=0)
+    odds = pd.read_csv("Data/ufc_combined_money_921_date.csv", index_col=0)
     odds.drop('born_year 1', axis=1, inplace=True)
     odds.drop('born_year 2', axis=1, inplace=True)
 
     # Get odds and winners from Event to predict
-    fights_predict = odds[odds['Event'].str.contains(event, case=False, na=False)]
-    odds_predict = fights_predict[['Fighter 1 Odds', 'Fighter 2 Odds']]
+    fights_predict = odds[odds['Event'].str.contains(event, case=False, na=False)].copy()
+    odds_predict = fights_predict[['Fighter 1 Odds', 'Fighter 2 Odds']].copy()
     edit_data(fights_predict)
     X = fights_predict.drop(columns=['Winner'])  # Features (all columns except 'Winner')
     scaler = StandardScaler()
@@ -222,9 +244,9 @@ def main(event):
     X_train_scaled, X_train, y_train, logreg, y_pred, X_test, y_test = predict_fights(odds)
 
     # Some data analysis of regression
-    plot_cnf(y_test, y_pred)
-    get_classification(y_test, y_pred)
-    plot_auc(X_test, y_test,logreg)
+    # plot_cnf(y_test, y_pred)
+    # get_classification(y_test, y_pred)
+    # plot_auc(X_test, y_test,logreg)
 
     # Assuming y_test are the true labels and y_pred are the predicted labels
     find_accuracy(y_test, y_pred)
