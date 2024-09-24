@@ -204,6 +204,7 @@ def clean_columns(fighter_df):
         'Td 1', 'Td 2', 'Kd 1', 'Kd 2', 'Method', 'Round', 'Ctrl 1', 'Ctrl 2', 'Time',
         'KD 1', 'KD 2', 'Ht', 'Reach'
     ])
+    return fighter_df
 
 def update_physical(i, fighter_df, more_fighter_stats, fighter):
     # Get the opponent's stats
@@ -468,7 +469,7 @@ def create_new_stats(fighter_dfs, more_fighter_stats):
             update_method(i, fighter_df, running_stats)
 
         # Remove the specified columns
-        clean_columns(fighter_df)
+        fighter_df = clean_columns(fighter_df)
 
         # Add df to dictionary
         fighter_dfs[fighter] = fighter_df
@@ -547,15 +548,66 @@ def combine_fighter_stats(all_fights_combined):
 
     return combined_df
 
+# def ensure_winner_is_fighter_1(df):
+#     # Define columns that need to be swapped
+#     stat_columns = [col for col in df.columns if col.endswith('1') or col.endswith('2')]
+
+#     for index, row in df.iterrows():
+#         # If Fighter 2 is the winner, swap Fighter 1 and Fighter 2 and their corresponding stats
+#         if row['Winner'] == 0:
+#             # Swap fighters
+#             df.at[index, 'Fighter 1'], df.at[index, 'Fighter 2'] = row['Fighter 2'], row['Fighter 1']
+
+#             # Set Winner to 1 since Fighter 1 is now the winner
+#             df.at[index, 'Winner'] = 1
+
+#             # Swap all corresponding stats
+#             for stat in stat_columns:
+#                 if stat.endswith('1'):
+#                     stat_1 = stat
+#                     stat_2 = stat[:-1] + '2'
+#                     df.at[index, stat_1], df.at[index, stat_2] = row[stat_2], row[stat_1]
+
+#     return df
+
+# def randomize_winner(df):
+#     # Define columns that need to be swapped
+#     stat_columns = [col for col in df.columns if col.endswith('1') or col.endswith('2')]
+
+#     for index, row in df.iterrows():
+#         # Randomly decide whether to flip (50% chance)
+#         flip_winner = np.random.choice([0, 1])  # 0 or 1 with equal probability
+
+#         if flip_winner == 1:
+#             # Swap fighters
+#             df.at[index, 'Fighter 1'], df.at[index, 'Fighter 2'] = row['Fighter 2'], row['Fighter 1']
+
+#             # Swap winner
+#             df.at[index, 'Winner'] = 1 if row['Winner'] == 0 else 0
+
+#             # Swap all corresponding stats
+#             for stat in stat_columns:
+#                 if stat.endswith('1'):
+#                     stat_1 = stat
+#                     stat_2 = stat[:-1] + '2'
+#                     df.at[index, stat_1], df.at[index, stat_2] = row[stat_2], row[stat_1]
+
+#     return df
+
 def ensure_winner_is_fighter_1(df):
-    # Define columns that need to be swapped
-    stat_columns = [col for col in df.columns if col.endswith('1') or col.endswith('2')]
+    # Define columns that need to be swapped, excluding 'Fighter 1' and 'Fighter 2'
+    stat_columns = [col for col in df.columns if (col.endswith('1') or col.endswith('2')) and 'Fighter' not in col]
 
     for index, row in df.iterrows():
         # If Fighter 2 is the winner, swap Fighter 1 and Fighter 2 and their corresponding stats
         if row['Winner'] == 0:
+            # Temporarily store Fighter 1 and Fighter 2
+            fighter_1 = row['Fighter 1']
+            fighter_2 = row['Fighter 2']
+            
             # Swap fighters
-            df.at[index, 'Fighter 1'], df.at[index, 'Fighter 2'] = row['Fighter 2'], row['Fighter 1']
+            df.at[index, 'Fighter 1'] = fighter_2
+            df.at[index, 'Fighter 2'] = fighter_1
 
             # Set Winner to 1 since Fighter 1 is now the winner
             df.at[index, 'Winner'] = 1
@@ -563,33 +615,45 @@ def ensure_winner_is_fighter_1(df):
             # Swap all corresponding stats
             for stat in stat_columns:
                 if stat.endswith('1'):
+                    # Swap stats using temporary variables
                     stat_1 = stat
                     stat_2 = stat[:-1] + '2'
-                    df.at[index, stat_1], df.at[index, stat_2] = row[stat_2], row[stat_1]
+                    temp_stat_1 = row[stat_1]
+                    temp_stat_2 = row[stat_2]
+                    df.at[index, stat_1] = temp_stat_2
+                    df.at[index, stat_2] = temp_stat_1
 
     return df
 
 def randomize_winner(df):
-    # Define columns that need to be swapped
-    stat_columns = [col for col in df.columns if col.endswith('1') or col.endswith('2')]
+    # Define columns that need to be swapped, excluding 'Fighter 1' and 'Fighter 2'
+    stat_columns = [col for col in df.columns if (col.endswith('1') or col.endswith('2')) and 'Fighter' not in col]
 
     for index, row in df.iterrows():
         # Randomly decide whether to flip (50% chance)
         flip_winner = np.random.choice([0, 1])  # 0 or 1 with equal probability
 
         if flip_winner == 1:
+            # Temporarily store Fighter 1 and Fighter 2
+            fighter_1 = row['Fighter 1']
+            fighter_2 = row['Fighter 2']
+
             # Swap fighters
-            df.at[index, 'Fighter 1'], df.at[index, 'Fighter 2'] = row['Fighter 2'], row['Fighter 1']
+            df.at[index, 'Fighter 1'] = fighter_2
+            df.at[index, 'Fighter 2'] = fighter_1
 
             # Swap winner
             df.at[index, 'Winner'] = 1 if row['Winner'] == 0 else 0
 
-            # Swap all corresponding stats
+            # Swap all corresponding stats using temporary variables
             for stat in stat_columns:
                 if stat.endswith('1'):
                     stat_1 = stat
                     stat_2 = stat[:-1] + '2'
-                    df.at[index, stat_1], df.at[index, stat_2] = row[stat_2], row[stat_1]
+                    temp_stat_1 = row[stat_1]
+                    temp_stat_2 = row[stat_2]
+                    df.at[index, stat_1] = temp_stat_2
+                    df.at[index, stat_2] = temp_stat_1
 
     return df
 
@@ -611,7 +675,9 @@ def prepare_data_for_analysis(combined_df):
     bouts = combined_df
 
     # Clean data
+    print("columns before clean ", bouts.columns)
     bouts = clean_bouts_data(bouts)
+    print("columns after clean ", bouts.columns)
 
     ## Randomize winner
     bouts = ensure_winner_is_fighter_1(bouts)
@@ -632,8 +698,8 @@ def prepare_data_for_analysis(combined_df):
 
 def main():
     # Get fighter and bouts data
-    fighters = pd.read_csv("fighters15.csv")
-    bouts_clean = pd.read_csv("bouts_913.csv")
+    fighters = pd.read_csv("Data/fighters15.csv")
+    bouts_clean = pd.read_csv("Data/bouts_913.csv")
 
     # Edit columns
     drop_edit_col_names(fighters)
@@ -654,9 +720,11 @@ def main():
     all_fights_combined = combine_all_fights(fighter_dfs)
     combined_df = combine_fighter_stats(all_fights_combined)
 
+    combined_df.to_csv("combined_df_923.csv")
+
     # Back to processing before analysis
     bouts = prepare_data_for_analysis(combined_df)
-    bouts.to_csv("ufc_combined_0923.csv")
+    bouts.to_csv("ufc_combined_0923_2.csv")
 
 if __name__ == "__main__":
     main()

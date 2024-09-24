@@ -88,7 +88,7 @@ def find_bets(odds, fights, probabilities):
     profit = 0
     bets = []
     winnings = []
-
+    print("all odds ", odds)
     print("actual winners ",fights['Winner'].to_list())
     print("probabilities ", probabilities)
     print("starting money ", total_money)
@@ -225,12 +225,15 @@ def edit_data(fights):
 # This is the main function
 def main(event):
     # Get odds csv and drop useless columns
-    odds = pd.read_csv("Data/ufc_combined_money_921_date.csv", index_col=0)
+    odds = pd.read_csv("Data/ufc_combined_money_923_date.csv", index_col=0)
     odds.drop('born_year 1', axis=1, inplace=True)
     odds.drop('born_year 2', axis=1, inplace=True)
 
     # Get odds and winners from Event to predict
     fights_predict = odds[odds['Event'].str.contains(event, case=False, na=False)].copy()
+    print("fights_predict 1 ", fights_predict['Fighter 1'])
+    print("fights_predict 2 ", fights_predict['Fighter 2'])
+    print("fights_predict ", fights_predict['Winner'])
     odds_predict = fights_predict[['Fighter 1 Odds', 'Fighter 2 Odds']].copy()
     edit_data(fights_predict)
     X = fights_predict.drop(columns=['Winner'])  # Features (all columns except 'Winner')
@@ -260,4 +263,4 @@ def main(event):
 # Entry point of the script
 if __name__ == "__main__":
     # Find bets for a UFC event
-    main('UFC 303')
+    main('UFC 294')

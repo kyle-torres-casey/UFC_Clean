@@ -50,14 +50,14 @@ def edit_dataframes(fights_df, odds_df):
     odds_df['Date'] = odds_df['Date'].astype(int)
 
 def main():
-    odds_df = pd.read_csv('combined_fight_odds_916.csv', index_col=0)
-    fights_df = pd.read_csv('ufc_combined_0911.csv', index_col=0)   
+    odds_df = pd.read_csv('Data/combined_fight_odds_916.csv', index_col=0)
+    fights_df = pd.read_csv('Data/ufc_combined_0923_2.csv', index_col=0)   
     
     edit_dataframes(fights_df, odds_df)
 
     combined_df, other_df = find_fights_with_odds(fights_df, odds_df)
 
-    combined_df.to_csv("ufc_combined_money_921_date.csv")
+    combined_df.to_csv("ufc_combined_money_923_date.csv")
 
 if __name__ == "__main__":
     main()
