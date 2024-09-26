@@ -86,21 +86,21 @@ def format_date_to_month_year(date_str):
 
 def main():
     odds_df = pd.read_csv('Data/combined_fight_odds_916.csv', index_col=0)
-    fights_df = pd.read_csv('Data/ufc_combined_0923_2.csv', index_col=0)   
+    fights_df = pd.read_csv('Data/ufc_combined_0924_2.csv', index_col=0)   
     # Apply to the 'Date' column in fights_df
     fights_df['Date'] = fights_df['Date'].apply(format_date)
     # Apply this to the 'Date' column in your dataframe
     odds_df['Date'] = odds_df['Date'].apply(format_date_to_month_year)
     
     fights_df, odds_df = edit_dataframes(fights_df, odds_df)
-    fights_df.to_csv("fights_df_check.csv")
-    odds_df.to_csv("odds_df_check.csv")
+    fights_df.to_csv("Data/fights_df_check_924.csv")
+    odds_df.to_csv("Data/odds_df_check_924.csv")
 
     combined_df, other_df = find_fights_with_odds(fights_df, odds_df)
     # combined_df['Date'] = combined_df['Date'].str[-4:]
     # combined_df['Date'] = combined_df['Date'].astype(int)
 
-    combined_df.to_csv("ufc_combined_money_923_date.csv")
+    combined_df.to_csv("Data/ufc_combined_money_924_date.csv")
 
 if __name__ == "__main__":
     main()

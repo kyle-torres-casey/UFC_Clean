@@ -43,14 +43,16 @@ def drop_edit_col_names(fighters):
     fighters.drop("D", axis=1, inplace=True)
     fighters.drop("Unnamed: 15", axis=1, inplace=True)
 
-    fighters.rename(columns={
-        'W': 'Career W',
-        'L': 'Career L',
-        # Add more columns if needed
-    }, inplace=True)
+    # fighters.rename(columns={
+    #     'W': 'Career W',
+    #     'L': 'Career L',
+    #     # Add more columns if needed
+    # }, inplace=True)
 
     # use born year only
     fighters["born_year"] = fighters["DOB"].map(lambda dob: get_year(dob))
+
+    return fighters
 
 # Function to convert height to inches
 def height_to_inches(height):
@@ -136,63 +138,66 @@ def initialize_columns(fighter_df):
         'KD Avg': 0.0, 'KD Opp Avg': 0.0, 'DEC Avg': 0.0, 'KO Avg': 0.0, 'SUB Avg': 0.0,
         'DEC Opp Avg': 0.0, 'KO Opp Avg': 0.0, 'SUB Opp Avg': 0.0,
         'CTRL Avg': 0.0, 'CTRL Opp Avg': 0.0, 'Time Avg': 0.0, 'Streak': 0.0,
-        'Ht Diff': 0.0, 'Reach Diff': 0.0, 'Age': 0.0, 'Career W': 0.0, 'Career L': 0.0,
-        'Career Fights': 0.0, 'Career W Perc': 0.0
+        'Ht Diff': 0.0, 'Reach Diff': 0.0, 'Age': 0.0
+        # 'Career W': fighter_df['Career W'].values[len(fighter_df) -1 ] #, 
+        # 'Career L': fighter_df['Career L'].values[len(fighter_df) -1 ],
+        # 'Career Fights': 0.0, 'Career W Perc': 0.0
     }
     for col, value in columns.items():
         fighter_df.loc[:, col] = value
 
+    return fighter_df
+
 def initialize_running_stats(fighter_df):
     running_stats = {
-        "wins": 0,  
-        "losses": 0,
-        "fights": 0,
-        "w_perc": 0,
+        "wins": 0.0,  
+        "losses": 0.0,
+        "fights": 0.0,
+        "w_perc": 0.0,
 
         # Sig Strikes
-        "running_sig_strikes_1": 0,
-        "running_attempted_strikes_1": 0,
-        "running_sig_strikes_2": 0,
-        "running_attempted_strikes_2": 0,
+        "running_sig_strikes_1": 0.0,
+        "running_attempted_strikes_1": 0.0,
+        "running_sig_strikes_2": 0.0,
+        "running_attempted_strikes_2": 0.0,
 
         # Total Strikes
-        "running_strikes_1": 0,
-        "running_attempted_strikes_1": 0,
-        "running_strikes_2": 0,
-        "running_attempted_strikes_2": 0,
+        "running_strikes_1": 0.0,
+        "running_attempted_strikes_1": 0.0,
+        "running_strikes_2": 0.0,
+        "running_attempted_strikes_2": 0.0,
 
         # Total TD (Takedowns)
-        "running_td_1": 0,
-        "running_attempted_td_1": 0,
-        "running_td_2": 0,
-        "running_attempted_td_2": 0,
+        "running_td_1": 0.0,
+        "running_attempted_td_1": 0.0,
+        "running_td_2": 0.0,
+        "running_attempted_td_2": 0.0,
 
         # Knockdowns (KD)
-        "running_kd_1": 0,
-        "running_kd_2": 0,
+        "running_kd_1": 0.0,
+        "running_kd_2": 0.0,
 
         # Method: Decision (DEC), KO, Submission (SUB)
-        "running_dec": 0,
-        "running_ko": 0,
-        "running_sub": 0,
-        "running_dec_opp": 0,
-        "running_ko_opp": 0,
-        "running_sub_opp": 0,
+        "running_dec": 0.0,
+        "running_ko": 0.0,
+        "running_sub": 0.0,
+        "running_dec_opp": 0.0,
+        "running_ko_opp": 0.0,
+        "running_sub_opp": 0.0,
 
         # Control Time
-        "running_ctrl_1": 0,
-        "running_ctrl_2": 0,
+        "running_ctrl_1": 0.0,
+        "running_ctrl_2": 0.0,
 
         # Fight Time
-        "running_time": 0,
+        "running_time": 0.0,
 
         # Streak
-        "streak": 0,
-
-        # Career wins and losses
-        "career_w": fighter_df['Career W'].values[len(fighter_df) - 1],
-        "career_l": fighter_df['Career L'].values[len(fighter_df) - 1]
+        "streak": 0.0
     }
+        # Career wins and losses
+        # "career_w": fighter_df['Career W'].values[len(fighter_df) - 1],
+        # "career_l": fighter_df['Career L'].values[len(fighter_df) - 1]
     return running_stats
 
 def clean_columns(fighter_df):
@@ -229,6 +234,7 @@ def update_physical(i, fighter_df, more_fighter_stats, fighter):
             fighter_df.loc[fighter_df.index[i], 'Reach Diff'] = float(reach) - float(opponent_reach)
         else:
             fighter_df.loc[fighter_df.index[i], 'Reach Diff'] = 0
+    return fighter_df
 
 def update_age(i, fighter_df):
     # Get Age
@@ -241,6 +247,8 @@ def update_age(i, fighter_df):
         fighter_df.loc[fighter_df.index[i], 'Age'] = int(year) - int(birth_year)
     else:
         fighter_df.loc[fighter_df.index[i], 'Age'] = 0
+
+    return fighter_df
 
 def update_streak(i, fighter_df, running_stats):
     # Calculate win streak
@@ -258,21 +266,23 @@ def update_streak(i, fighter_df, running_stats):
 
         # Update the streak column
         fighter_df.loc[fighter_df.index[i], 'Streak'] = running_stats['streak']
+    
+    return fighter_df, running_stats
 
-def update_career_win_loss(i, fighter_df, running_stats):
-    # Iteratively go back and solve total career stats
-    if fighter_df.iloc[len(fighter_df) - 1 - i]['W/L 1']=='win':
-        running_stats['career_w'] -= 1
-    else:
-        running_stats['career_l'] -= 1
+# def update_career_win_loss(i, fighter_df, running_stats):
+#     # Iteratively go back and solve total career stats
+#     if fighter_df.iloc[len(fighter_df) - 1 - i]['W/L 1']=='win':
+#         running_stats['career_w'] -= 1
+#     else:
+#         running_stats['career_l'] -= 1
 
-    fighter_df.loc[fighter_df.index[len(fighter_df) - 1 - i], 'Career W'] = running_stats['career_w']
-    fighter_df.loc[fighter_df.index[len(fighter_df) - 1 - i], 'Career L'] = running_stats['career_l']
-    fighter_df.loc[fighter_df.index[len(fighter_df) - 1 - i], 'Career Fights'] = running_stats['career_l'] + running_stats['career_w']
-    if running_stats['career_l'] + running_stats['career_w'] != 0:
-        fighter_df.loc[fighter_df.index[len(fighter_df) - 1 - i], 'Career W Perc'] = running_stats['career_w'] / (running_stats['career_l'] + running_stats['career_w']) * 100
-    else:
-        fighter_df.loc[fighter_df.index[len(fighter_df) - 1 - i], 'Career W Perc'] = 0
+#     fighter_df.loc[fighter_df.index[len(fighter_df) - 1 - i], 'Career W'] = running_stats['career_w']
+#     fighter_df.loc[fighter_df.index[len(fighter_df) - 1 - i], 'Career L'] = running_stats['career_l']
+#     fighter_df.loc[fighter_df.index[len(fighter_df) - 1 - i], 'Career Fights'] = running_stats['career_l'] + running_stats['career_w']
+#     if running_stats['career_l'] + running_stats['career_w'] != 0:
+#         fighter_df.loc[fighter_df.index[len(fighter_df) - 1 - i], 'Career W Perc'] = running_stats['career_w'] / (running_stats['career_l'] + running_stats['career_w']) * 100
+#     else:
+#         fighter_df.loc[fighter_df.index[len(fighter_df) - 1 - i], 'Career W Perc'] = 0
 
 def update_win_loss(i, fighter_df, running_stats):
     ### Update for W, L, Num Fights, and W Perc
@@ -288,7 +298,9 @@ def update_win_loss(i, fighter_df, running_stats):
     fighter_df.loc[fighter_df.index[i + 1], 'W'] = running_stats['wins']
     fighter_df.loc[fighter_df.index[i + 1], 'L'] = running_stats['losses']
     fighter_df.loc[fighter_df.index[i + 1], 'Num Fights'] = running_stats['fights']
-    fighter_df.loc[fighter_df.index[i + 1], 'W Perc'] = int(running_stats['w_perc'] * 100.0)
+    fighter_df.loc[fighter_df.index[i + 1], 'W Perc'] = running_stats['w_perc'] * 100.0
+
+    return fighter_df, running_stats
 
 def update_control_time(i, fighter_df, running_stats):
     # Update control time and total time based on existing columns
@@ -312,9 +324,11 @@ def update_control_time(i, fighter_df, running_stats):
         running_stats['running_time'] += fighter_df.iloc[i]['Time']
 
     # Assign running totals to new columns
-    fighter_df.loc[fighter_df.index[i+1], 'CTRL Avg'] = 0.0 if running_stats['fights']==0 else running_stats['running_ctrl_1']/running_stats['fights']
-    fighter_df.loc[fighter_df.index[i+1], 'CTRL Opp Avg'] = 0.0 if running_stats['fights']==0 else running_stats['running_ctrl_2']/running_stats['fights']
-    fighter_df.loc[fighter_df.index[i+1], 'Time Avg'] = 0.0 if running_stats['fights']==0 else running_stats['running_time']/running_stats['fights']
+    fighter_df.loc[fighter_df.index[i+1], 'CTRL Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_ctrl_1']/running_stats['fights']
+    fighter_df.loc[fighter_df.index[i+1], 'CTRL Opp Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_ctrl_2']/running_stats['fights']
+    fighter_df.loc[fighter_df.index[i+1], 'Time Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_time']/running_stats['fights']
+
+    return fighter_df, running_stats
 
 def update_sig_strike(i, fighter_df, running_stats):
     ### Update for Sig Str 1 totals and running career sig str %
@@ -330,7 +344,7 @@ def update_sig_strike(i, fighter_df, running_stats):
             else:
                 running_stats['sig_str_percentage_1'] = (running_stats['running_sig_strikes_1'] / running_stats['running_attempted_strikes_1']) * 100
 
-            fighter_df.loc[fighter_df.index[i + 1], 'Sig Strikes Avg'] = 0.0 if running_stats['fights']==0 else running_stats['running_sig_strikes_1']/running_stats['fights']
+            fighter_df.loc[fighter_df.index[i + 1], 'Sig Strikes Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_sig_strikes_1']/running_stats['fights']
             fighter_df.loc[fighter_df.index[i + 1], 'Sig Str %'] = running_stats['sig_str_percentage_1']
 
         elif j == 2:
@@ -341,8 +355,10 @@ def update_sig_strike(i, fighter_df, running_stats):
             else:
                 running_stats['sig_str_percentage_2'] = (running_stats['running_sig_strikes_2'] / running_stats['running_attempted_strikes_2']) * 100
 
-            fighter_df.loc[fighter_df.index[i + 1], 'Sig Strikes Opp Avg'] = 0.0 if running_stats['fights']==0 else running_stats['running_sig_strikes_2']/running_stats['fights']
+            fighter_df.loc[fighter_df.index[i + 1], 'Sig Strikes Opp Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_sig_strikes_2']/running_stats['fights']
             fighter_df.loc[fighter_df.index[i + 1], 'Sig Str % Opp'] = running_stats['sig_str_percentage_2']
+    
+    return fighter_df, running_stats
 
 def update_strike(i, fighter_df, running_stats):
     ## Update for Total Str (Strikes 1 and Strikes 2)
@@ -358,7 +374,7 @@ def update_strike(i, fighter_df, running_stats):
             else:
                 running_stats['str_percentage_1'] = (running_stats['running_strikes_1'] / running_stats['running_attempted_strikes_1']) * 100
 
-            fighter_df.loc[fighter_df.index[i + 1], 'Strikes Avg'] = 0.0 if running_stats['fights']==0 else running_stats['running_strikes_1']/running_stats['fights']
+            fighter_df.loc[fighter_df.index[i + 1], 'Strikes Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_strikes_1']/running_stats['fights']
             fighter_df.loc[fighter_df.index[i + 1], 'Str %'] = running_stats['str_percentage_1']
 
         elif j == 2:
@@ -369,8 +385,10 @@ def update_strike(i, fighter_df, running_stats):
             else:
                 running_stats['str_percentage_2'] = (running_stats['running_strikes_2'] / running_stats['running_attempted_strikes_2']) * 100
 
-            fighter_df.loc[fighter_df.index[i + 1], 'Strikes Avg'] = 0.0 if running_stats['fights']==0 else running_stats['running_strikes_2']/running_stats['fights']
+            fighter_df.loc[fighter_df.index[i + 1], 'Strikes Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_strikes_2']/running_stats['fights']
             fighter_df.loc[fighter_df.index[i + 1], 'Str %'] = running_stats['str_percentage_2']
+    
+    return fighter_df, running_stats
 
 def update_td(i, fighter_df, running_stats):
     for j, td_str_col in enumerate(['Td 1', 'Td 2'], start=1):
@@ -385,7 +403,7 @@ def update_td(i, fighter_df, running_stats):
             else:
                 running_stats['td_percentage_1'] = (running_stats['running_td_1'] / running_stats['running_attempted_td_1']) * 100
 
-            fighter_df.loc[fighter_df.index[i + 1], 'TD Avg'] = 0.0 if running_stats['fights']==0 else running_stats['running_td_1']/running_stats['fights']
+            fighter_df.loc[fighter_df.index[i + 1], 'TD Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_td_1']/running_stats['fights']
             fighter_df.loc[fighter_df.index[i + 1], 'TD %'] = running_stats['td_percentage_1']
 
         elif j == 2:
@@ -396,8 +414,10 @@ def update_td(i, fighter_df, running_stats):
             else:
                 running_stats['td_percentage_2'] = (running_stats['running_td_2'] / running_stats['running_attempted_td_2']) * 100
 
-            fighter_df.loc[fighter_df.index[i + 1], 'TD Avg'] = 0.0 if running_stats['fights']==0 else running_stats['running_td_2']/running_stats['fights']
+            fighter_df.loc[fighter_df.index[i + 1], 'TD Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_td_2']/running_stats['fights']
             fighter_df.loc[fighter_df.index[i + 1], 'TD %'] = running_stats['td_percentage_2']
+    
+    return fighter_df, running_stats
 
 def update_kd(i, fighter_df, running_stats):
     ### Update for KD Total 1 and KD Total 2
@@ -406,11 +426,13 @@ def update_kd(i, fighter_df, running_stats):
 
         if j == 1:
             running_stats['running_kd_1'] += kd
-            fighter_df.loc[fighter_df.index[i + 1], 'KD Avg'] = 0.0 if running_stats['fights']==0 else running_stats['running_kd_1']/running_stats['fights']
+            fighter_df.loc[fighter_df.index[i + 1], 'KD Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_kd_1']/running_stats['fights']
 
         elif j == 2:
             running_stats['running_kd_2'] += kd
-            fighter_df.loc[fighter_df.index[i + 1], 'KD Opp Avg'] = 0.0 if running_stats['fights']==0 else running_stats['running_kd_2']/running_stats['fights']
+            fighter_df.loc[fighter_df.index[i + 1], 'KD Opp Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_kd_2']/running_stats['fights']
+
+    return fighter_df, running_stats
 
 def update_method(i, fighter_df, running_stats):
     ### Update for Method DEC and KO
@@ -432,41 +454,43 @@ def update_method(i, fighter_df, running_stats):
             running_stats['running_sub_opp'] += 1
 
     # Update dataframe
-    fighter_df.loc[fighter_df.index[i + 1], 'DEC Avg'] = 0.0 if running_stats['fights']==0 else running_stats['running_dec']/running_stats['fights']
-    fighter_df.loc[fighter_df.index[i + 1], 'DEC Opp Avg'] = 0.0 if running_stats['fights']==0 else running_stats['running_dec_opp']/running_stats['fights']
-    fighter_df.loc[fighter_df.index[i + 1], 'KO Avg'] = 0.0 if running_stats['fights']==0 else running_stats['running_ko']/running_stats['fights']
-    fighter_df.loc[fighter_df.index[i + 1], 'KO Opp Avg'] = 0.0 if running_stats['fights']==0 else running_stats['running_ko_opp']/running_stats['fights']
-    fighter_df.loc[fighter_df.index[i + 1], 'SUB Avg'] = 0.0 if running_stats['fights']==0 else running_stats['running_sub']/running_stats['fights']
-    fighter_df.loc[fighter_df.index[i + 1], 'SUB Opp Avg'] = 0.0 if running_stats['fights']==0 else running_stats['running_sub_opp']/running_stats['fights']
+    fighter_df.loc[fighter_df.index[i + 1], 'DEC Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_dec']/running_stats['fights']
+    fighter_df.loc[fighter_df.index[i + 1], 'DEC Opp Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_dec_opp']/running_stats['fights']
+    fighter_df.loc[fighter_df.index[i + 1], 'KO Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_ko']/running_stats['fights']
+    fighter_df.loc[fighter_df.index[i + 1], 'KO Opp Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_ko_opp']/running_stats['fights']
+    fighter_df.loc[fighter_df.index[i + 1], 'SUB Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_sub']/running_stats['fights']
+    fighter_df.loc[fighter_df.index[i + 1], 'SUB Opp Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_sub_opp']/running_stats['fights']
+
+    return fighter_df, running_stats
 
 def create_new_stats(fighter_dfs, more_fighter_stats):
     for fighter in fighter_dfs:
         fighter_df = fighter_dfs[fighter]
 
         # Initialize all the new values with zeros
-        initialize_columns(fighter_df)
+        fighter_df = initialize_columns(fighter_df)
 
         running_stats = initialize_running_stats(fighter_df)
 
         for i in range(len(fighter_df)):
             ### Update Stats
-            update_physical(i, fighter_df, more_fighter_stats, fighter)
-            update_age(i, fighter_df)
-            update_streak(i, fighter_df, running_stats)
-            update_career_win_loss(i, fighter_df, running_stats)
+            fighter_df = update_physical(i, fighter_df, more_fighter_stats, fighter)
+            fighter_df = update_age(i, fighter_df)
+            fighter_df, running_stats = update_streak(i, fighter_df, running_stats)
+            # update_career_win_loss(i, fighter_df, running_stats)
 
             # Skip last loop for other stats
             if i == (len(fighter_df) - 1):
                 continue
             
             # Update next fight stats
-            update_win_loss(i, fighter_df, running_stats)
-            update_control_time(i, fighter_df, running_stats)
-            update_sig_strike(i, fighter_df, running_stats)
-            update_strike(i, fighter_df, running_stats)
-            update_td(i, fighter_df, running_stats)
-            update_kd(i, fighter_df, running_stats)
-            update_method(i, fighter_df, running_stats)
+            fighter_df, running_stats = update_win_loss(i, fighter_df, running_stats)
+            fighter_df, running_stats = update_control_time(i, fighter_df, running_stats)
+            fighter_df, running_stats = update_sig_strike(i, fighter_df, running_stats)
+            fighter_df, running_stats = update_strike(i, fighter_df, running_stats)
+            fighter_df, running_stats = update_td(i, fighter_df, running_stats)
+            fighter_df, running_stats = update_kd(i, fighter_df, running_stats)
+            fighter_df, running_stats = update_method(i, fighter_df, running_stats)
 
         # Remove the specified columns
         fighter_df = clean_columns(fighter_df)
@@ -495,7 +519,7 @@ def combine_fighter_stats(all_fights_combined):
                     'Strikes Opp Avg', 'Str % Opp', 'TD Avg', 'TD %', 'TD Opp Avg',
                     'TD % Opp', 'KD Avg', 'KD Opp Avg', 'DEC Avg', 'KO Avg',
                     'SUB Avg', 'DEC Opp Avg', 'KO Opp Avg', 'SUB Opp Avg', 'CTRL Avg',
-                    'CTRL Opp Avg', 'Time Avg', 'Streak', 'Career W', 'Career L', 'Career Fights', 'Career W Perc',
+                    'CTRL Opp Avg', 'Time Avg', 'Streak', #'Career W', 'Career L', 'Career Fights', 'Career W Perc',
                     'Ht Diff', 'Reach Diff', 'Age', 'Stance','born_year']
 
     # Create a new DataFrame to store combined rows
@@ -547,52 +571,6 @@ def combine_fighter_stats(all_fights_combined):
     combined_df['Stance 2'] = combined_df['Stance 2'].replace({np.nan: None})   
 
     return combined_df
-
-# def ensure_winner_is_fighter_1(df):
-#     # Define columns that need to be swapped
-#     stat_columns = [col for col in df.columns if col.endswith('1') or col.endswith('2')]
-
-#     for index, row in df.iterrows():
-#         # If Fighter 2 is the winner, swap Fighter 1 and Fighter 2 and their corresponding stats
-#         if row['Winner'] == 0:
-#             # Swap fighters
-#             df.at[index, 'Fighter 1'], df.at[index, 'Fighter 2'] = row['Fighter 2'], row['Fighter 1']
-
-#             # Set Winner to 1 since Fighter 1 is now the winner
-#             df.at[index, 'Winner'] = 1
-
-#             # Swap all corresponding stats
-#             for stat in stat_columns:
-#                 if stat.endswith('1'):
-#                     stat_1 = stat
-#                     stat_2 = stat[:-1] + '2'
-#                     df.at[index, stat_1], df.at[index, stat_2] = row[stat_2], row[stat_1]
-
-#     return df
-
-# def randomize_winner(df):
-#     # Define columns that need to be swapped
-#     stat_columns = [col for col in df.columns if col.endswith('1') or col.endswith('2')]
-
-#     for index, row in df.iterrows():
-#         # Randomly decide whether to flip (50% chance)
-#         flip_winner = np.random.choice([0, 1])  # 0 or 1 with equal probability
-
-#         if flip_winner == 1:
-#             # Swap fighters
-#             df.at[index, 'Fighter 1'], df.at[index, 'Fighter 2'] = row['Fighter 2'], row['Fighter 1']
-
-#             # Swap winner
-#             df.at[index, 'Winner'] = 1 if row['Winner'] == 0 else 0
-
-#             # Swap all corresponding stats
-#             for stat in stat_columns:
-#                 if stat.endswith('1'):
-#                     stat_1 = stat
-#                     stat_2 = stat[:-1] + '2'
-#                     df.at[index, stat_1], df.at[index, stat_2] = row[stat_2], row[stat_1]
-
-#     return df
 
 def ensure_winner_is_fighter_1(df):
     # Define columns that need to be swapped, excluding 'Fighter 1' and 'Fighter 2'
@@ -695,14 +673,13 @@ def prepare_data_for_analysis(combined_df):
 
     return bouts
 
-
 def main():
     # Get fighter and bouts data
     fighters = pd.read_csv("Data/fighters15.csv")
     bouts_clean = pd.read_csv("Data/bouts_913.csv")
 
     # Edit columns
-    drop_edit_col_names(fighters)
+    fighters = drop_edit_col_names(fighters)
 
     # Invidual fighter stats
     more_fighter_stats = clean_fighter_stats(fighters)
@@ -720,11 +697,11 @@ def main():
     all_fights_combined = combine_all_fights(fighter_dfs)
     combined_df = combine_fighter_stats(all_fights_combined)
 
-    combined_df.to_csv("combined_df_923.csv")
+    combined_df.to_csv("Data/combined_df_924.csv")
 
     # Back to processing before analysis
     bouts = prepare_data_for_analysis(combined_df)
-    bouts.to_csv("ufc_combined_0923_2.csv")
+    bouts.to_csv("Data/ufc_combined_0924_2.csv")
 
 if __name__ == "__main__":
     main()

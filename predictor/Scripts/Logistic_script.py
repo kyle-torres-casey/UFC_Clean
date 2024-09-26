@@ -24,13 +24,13 @@ def find_probabilities(logreg, X_train_scaled, X_train, y_train, X_predict):
     coef_df = pd.DataFrame({'Feature': feature_names, 'Coefficient': coefficients})
     coef_df['AbsCoefficient'] = coef_df['Coefficient'].abs()  # Absolute value for comparison
     coef_df = coef_df.sort_values(by='AbsCoefficient', ascending=False)
+    print("coef_df ", coef_df)
 
     # Step 1: Get intercept
     intercept = logreg.intercept_
     # Step 2: Calculate logits
     logits = intercept + np.dot(X_predict, coefficients)
     # Step 3: Convert logits to probabilities using the logistic function
-
     return 1 / (1 + np.exp(-logits))
 
 def plot_auc(X_test, y_test, logreg):
@@ -153,7 +153,7 @@ def calc_stat_importance(odds):
         'DEC Avg Diff', 'KO Avg Diff', 'SUB Avg Diff', 'DEC Opp Avg Diff',
         'KO Opp Avg Diff', 'SUB Opp Avg Diff', 'CTRL Avg Diff',
         'CTRL Opp Avg Diff', 'Time Avg Diff', 'Streak Diff', 'Age Diff',
-        'Career Fights Diff', 'Career W Perc Diff', 'Stance Diff']
+         'Stance Diff', 'Career Fights Diff', 'Career W Perc Diff']
 
     # Dictionary to hold accuracies
     accuracy_results = {}
@@ -190,14 +190,14 @@ def edit_data(fights):
     fights[cats] = fights[cats].apply(lambda col: col.cat.codes)
 
     stats = [
-        'Career W', 'Career L', 'W', 'L', 'Num Fights',
+        'W', 'L', 'Num Fights', 'Career W', 'Career L', 
         'W Perc', 'Sig Strikes Avg', 'Sig Str %', 'Sig Strikes Opp Avg',
         'Sig Str % Opp', 'Strikes Avg', 'Str %', 'Strikes Opp Avg',
         'Str % Opp', 'TD Avg', 'TD %', 'TD Opp Avg', 'TD % Opp',
         'KD Avg', 'KD Opp Avg', 'DEC Avg', 'KO Avg', 'SUB Avg',
         'DEC Opp Avg', 'KO Opp Avg', 'SUB Opp Avg', 'CTRL Avg',
         'CTRL Opp Avg', 'Time Avg', 'Streak', 'Age',
-        'Career Fights', 'Career W Perc', 'Stance'
+         'Stance' ,'Career Fights', 'Career W Perc'
     ]
 
     # Create difference columns and drop the original columns
@@ -225,15 +225,13 @@ def edit_data(fights):
 # This is the main function
 def main(event):
     # Get odds csv and drop useless columns
-    odds = pd.read_csv("Data/ufc_combined_money_923_date.csv", index_col=0)
+    # ufc_fights_new_stats_910_2.csv
+    odds = pd.read_csv("Data/ufc_combined_money_921_date.csv", index_col=0)
     odds.drop('born_year 1', axis=1, inplace=True)
     odds.drop('born_year 2', axis=1, inplace=True)
 
     # Get odds and winners from Event to predict
     fights_predict = odds[odds['Event'].str.contains(event, case=False, na=False)].copy()
-    print("fights_predict 1 ", fights_predict['Fighter 1'])
-    print("fights_predict 2 ", fights_predict['Fighter 2'])
-    print("fights_predict ", fights_predict['Winner'])
     odds_predict = fights_predict[['Fighter 1 Odds', 'Fighter 2 Odds']].copy()
     edit_data(fights_predict)
     X = fights_predict.drop(columns=['Winner'])  # Features (all columns except 'Winner')
@@ -241,7 +239,9 @@ def main(event):
     X_predict = scaler.fit_transform(X)
 
     # Edit data for odds/fights
+    print("before ",odds.columns)
     edit_data(odds)
+    print("after ", odds.columns)
 
     # Predict fights
     X_train_scaled, X_train, y_train, logreg, y_pred, X_test, y_test = predict_fights(odds)
@@ -250,6 +250,7 @@ def main(event):
     # plot_cnf(y_test, y_pred)
     # get_classification(y_test, y_pred)
     # plot_auc(X_test, y_test,logreg)
+    # calc_stat_importance(odds)
 
     # Assuming y_test are the true labels and y_pred are the predicted labels
     find_accuracy(y_test, y_pred)
@@ -258,9 +259,9 @@ def main(event):
     probabilities = find_probabilities(logreg, X_train_scaled, X_train, y_train, X_predict)
 
     # Find bets
-    bets = find_bets(odds_predict, fights_predict, probabilities)
+    # bets = find_bets(odds_predict, fights_predict, probabilities)
 
 # Entry point of the script
 if __name__ == "__main__":
     # Find bets for a UFC event
-    main('UFC 294')
+    main('UFC 300')
