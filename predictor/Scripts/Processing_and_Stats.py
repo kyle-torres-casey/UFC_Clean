@@ -43,11 +43,11 @@ def drop_edit_col_names(fighters):
     fighters.drop("D", axis=1, inplace=True)
     fighters.drop("Unnamed: 15", axis=1, inplace=True)
 
-    # fighters.rename(columns={
-    #     'W': 'Career W',
-    #     'L': 'Career L',
-    #     # Add more columns if needed
-    # }, inplace=True)
+    fighters.rename(columns={
+        'W': 'Career W',
+        'L': 'Career L',
+        # Add more columns if needed
+    }, inplace=True)
 
     # use born year only
     fighters["born_year"] = fighters["DOB"].map(lambda dob: get_year(dob))
@@ -139,8 +139,8 @@ def initialize_columns(fighter_df):
         'DEC Opp Avg': 0.0, 'KO Opp Avg': 0.0, 'SUB Opp Avg': 0.0,
         'CTRL Avg': 0.0, 'CTRL Opp Avg': 0.0, 'Time Avg': 0.0, 'Streak': 0.0,
         'Ht Diff': 0.0, 'Reach Diff': 0.0, 'Age': 0.0
-        # 'Career W': fighter_df['Career W'].values[len(fighter_df) -1 ] #, 
-        # 'Career L': fighter_df['Career L'].values[len(fighter_df) -1 ],
+        # 'Career W': fighter_df['Career W'].values[len(fighter_df) -1 ], 
+        # 'Career L': fighter_df['Career L'].values[len(fighter_df) -1 ]
         # 'Career Fights': 0.0, 'Career W Perc': 0.0
     }
     for col, value in columns.items():
@@ -193,11 +193,13 @@ def initialize_running_stats(fighter_df):
         "running_time": 0.0,
 
         # Streak
-        "streak": 0.0
+        "streak": 0.0,
+
+        #Career wins and losses
+        "career_w": fighter_df['Career W'].values[len(fighter_df) - 1],
+        "career_l": fighter_df['Career L'].values[len(fighter_df) - 1]
     }
-        # Career wins and losses
-        # "career_w": fighter_df['Career W'].values[len(fighter_df) - 1],
-        # "career_l": fighter_df['Career L'].values[len(fighter_df) - 1]
+        
     return running_stats
 
 def clean_columns(fighter_df):
@@ -269,20 +271,22 @@ def update_streak(i, fighter_df, running_stats):
     
     return fighter_df, running_stats
 
-# def update_career_win_loss(i, fighter_df, running_stats):
-#     # Iteratively go back and solve total career stats
-#     if fighter_df.iloc[len(fighter_df) - 1 - i]['W/L 1']=='win':
-#         running_stats['career_w'] -= 1
-#     else:
-#         running_stats['career_l'] -= 1
+def update_career_win_loss(i, fighter_df, running_stats):
+    # Iteratively go back and solve total career stats
+    if fighter_df.iloc[len(fighter_df) - 1 - i]['W/L 1']=='win':
+        running_stats['career_w'] -= 1
+    else:
+        running_stats['career_l'] -= 1
 
-#     fighter_df.loc[fighter_df.index[len(fighter_df) - 1 - i], 'Career W'] = running_stats['career_w']
-#     fighter_df.loc[fighter_df.index[len(fighter_df) - 1 - i], 'Career L'] = running_stats['career_l']
-#     fighter_df.loc[fighter_df.index[len(fighter_df) - 1 - i], 'Career Fights'] = running_stats['career_l'] + running_stats['career_w']
-#     if running_stats['career_l'] + running_stats['career_w'] != 0:
-#         fighter_df.loc[fighter_df.index[len(fighter_df) - 1 - i], 'Career W Perc'] = running_stats['career_w'] / (running_stats['career_l'] + running_stats['career_w']) * 100
-#     else:
-#         fighter_df.loc[fighter_df.index[len(fighter_df) - 1 - i], 'Career W Perc'] = 0
+    fighter_df.loc[fighter_df.index[len(fighter_df) - 1 - i], 'Career W'] = running_stats['career_w']
+    fighter_df.loc[fighter_df.index[len(fighter_df) - 1 - i], 'Career L'] = running_stats['career_l']
+    fighter_df.loc[fighter_df.index[len(fighter_df) - 1 - i], 'Career Fights'] = running_stats['career_l'] + running_stats['career_w']
+    if running_stats['career_l'] + running_stats['career_w'] != 0:
+        fighter_df.loc[fighter_df.index[len(fighter_df) - 1 - i], 'Career W Perc'] = running_stats['career_w'] / (running_stats['career_l'] + running_stats['career_w']) * 100
+    else:
+        fighter_df.loc[fighter_df.index[len(fighter_df) - 1 - i], 'Career W Perc'] = 0
+
+    return fighter_df, running_stats
 
 def update_win_loss(i, fighter_df, running_stats):
     ### Update for W, L, Num Fights, and W Perc
@@ -477,7 +481,7 @@ def create_new_stats(fighter_dfs, more_fighter_stats):
             fighter_df = update_physical(i, fighter_df, more_fighter_stats, fighter)
             fighter_df = update_age(i, fighter_df)
             fighter_df, running_stats = update_streak(i, fighter_df, running_stats)
-            # update_career_win_loss(i, fighter_df, running_stats)
+            fighter_df, running_stats = update_career_win_loss(i, fighter_df, running_stats)
 
             # Skip last loop for other stats
             if i == (len(fighter_df) - 1):
@@ -519,7 +523,7 @@ def combine_fighter_stats(all_fights_combined):
                     'Strikes Opp Avg', 'Str % Opp', 'TD Avg', 'TD %', 'TD Opp Avg',
                     'TD % Opp', 'KD Avg', 'KD Opp Avg', 'DEC Avg', 'KO Avg',
                     'SUB Avg', 'DEC Opp Avg', 'KO Opp Avg', 'SUB Opp Avg', 'CTRL Avg',
-                    'CTRL Opp Avg', 'Time Avg', 'Streak', #'Career W', 'Career L', 'Career Fights', 'Career W Perc',
+                    'CTRL Opp Avg', 'Time Avg', 'Streak', 'Career W', 'Career L', 'Career Fights', 'Career W Perc',
                     'Ht Diff', 'Reach Diff', 'Age', 'Stance','born_year']
 
     # Create a new DataFrame to store combined rows
@@ -527,6 +531,8 @@ def combine_fighter_stats(all_fights_combined):
 
     # Track processed indices to avoid re-processing
     processed_indices = set()
+
+    print("poop ", all_fights_combined.columns)
 
     # Iterate over each row to find and combine matching rows
     for idx, row1 in all_fights_combined.iterrows():
@@ -697,11 +703,11 @@ def main():
     all_fights_combined = combine_all_fights(fighter_dfs)
     combined_df = combine_fighter_stats(all_fights_combined)
 
-    combined_df.to_csv("Data/combined_df_924.csv")
+    combined_df.to_csv("Data/combined_df_925.csv")
 
     # Back to processing before analysis
     bouts = prepare_data_for_analysis(combined_df)
-    bouts.to_csv("Data/ufc_combined_0924_2.csv")
+    bouts.to_csv("Data/ufc_combined_0925.csv")
 
 if __name__ == "__main__":
     main()

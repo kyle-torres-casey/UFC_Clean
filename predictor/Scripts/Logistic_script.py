@@ -210,8 +210,8 @@ def edit_data(fights):
     fights.drop(columns=cols_to_drop, inplace=True)
 
     fights.drop('Date', axis=1, inplace=True)
-    fights.drop('Fighter 1 Odds', axis=1, inplace=True)
-    fights.drop('Fighter 2 Odds', axis=1, inplace=True)
+    # fights.drop('Fighter 1 Odds', axis=1, inplace=True)
+    # fights.drop('Fighter 2 Odds', axis=1, inplace=True)
     fights.drop('Location', axis=1, inplace=True)
     fights.drop('Fighter 1', axis=1, inplace=True)
     fights.drop('Fighter 2', axis=1, inplace=True)
@@ -226,37 +226,38 @@ def edit_data(fights):
 def main(event):
     # Get odds csv and drop useless columns
     # ufc_fights_new_stats_910_2.csv
-    odds = pd.read_csv("Data/ufc_combined_money_921_date.csv", index_col=0)
-    odds.drop('born_year 1', axis=1, inplace=True)
-    odds.drop('born_year 2', axis=1, inplace=True)
+    # odds = pd.read_csv("Data/ufc_combined_money_921_date.csv", index_col=0)
+    fights = pd.read_csv("Data/ufc_combined_0925.csv", index_col=0)
+    fights.drop('born_year 1', axis=1, inplace=True)
+    fights.drop('born_year 2', axis=1, inplace=True)
 
     # Get odds and winners from Event to predict
-    fights_predict = odds[odds['Event'].str.contains(event, case=False, na=False)].copy()
-    odds_predict = fights_predict[['Fighter 1 Odds', 'Fighter 2 Odds']].copy()
-    edit_data(fights_predict)
-    X = fights_predict.drop(columns=['Winner'])  # Features (all columns except 'Winner')
-    scaler = StandardScaler()
-    X_predict = scaler.fit_transform(X)
+    # fights_predict = odds[odds['Event'].str.contains(event, case=False, na=False)].copy()
+    # odds_predict = fights_predict[['Fighter 1 Odds', 'Fighter 2 Odds']].copy()
+    # edit_data(fights_predict)
+    # X = fights_predict.drop(columns=['Winner'])  # Features (all columns except 'Winner')
+    # scaler = StandardScaler()
+    # X_predict = scaler.fit_transform(X)
 
     # Edit data for odds/fights
-    print("before ",odds.columns)
-    edit_data(odds)
-    print("after ", odds.columns)
+    print("before ",fights.columns)
+    edit_data(fights)
+    print("after ", fights.columns)
 
     # Predict fights
-    X_train_scaled, X_train, y_train, logreg, y_pred, X_test, y_test = predict_fights(odds)
+    X_train_scaled, X_train, y_train, logreg, y_pred, X_test, y_test = predict_fights(fights)
 
     # Some data analysis of regression
-    # plot_cnf(y_test, y_pred)
-    # get_classification(y_test, y_pred)
-    # plot_auc(X_test, y_test,logreg)
-    # calc_stat_importance(odds)
+    plot_cnf(y_test, y_pred)
+    get_classification(y_test, y_pred)
+    plot_auc(X_test, y_test,logreg)
+    calc_stat_importance(fights)
 
     # Assuming y_test are the true labels and y_pred are the predicted labels
     find_accuracy(y_test, y_pred)
 
-    # Find probabilites for each fight
-    probabilities = find_probabilities(logreg, X_train_scaled, X_train, y_train, X_predict)
+    #Find probabilites for each fight
+    # probabilities = find_probabilities(logreg, X_train_scaled, X_train, y_train, X_predict)
 
     # Find bets
     # bets = find_bets(odds_predict, fights_predict, probabilities)
