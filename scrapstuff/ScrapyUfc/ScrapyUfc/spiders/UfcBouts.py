@@ -5,8 +5,8 @@ import scrapy
 class UfcBoutsSpider(scrapy.Spider):
     name = "UfcBouts"
     allowed_domains = ["ufcstats.com"]
-    start_urls = ["http://ufcstats.com/statistics/events/completed?page=all"]
-    # start_urls = ["http://ufcstats.com/statistics/events/upcoming?page=all"]
+    # start_urls = ["http://ufcstats.com/statistics/events/completed?page=all"]
+    start_urls = ["http://ufcstats.com/statistics/events/upcoming?page=all"]
     # http://ufcstats.com/statistics/events/upcoming?page=all
     # start_urls = ["http://ufcstats.com/statistics/events/search?query=ufc+306"]
 
