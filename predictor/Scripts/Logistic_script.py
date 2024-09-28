@@ -12,7 +12,7 @@ def find_accuracy(y_test, y_pred):
     accuracy = accuracy_score(y_test, y_pred)
     print(f"Accuracy: {accuracy * 100:.2f}%")
 
-def find_probabilities(logreg, X_train_scaled, X_train, y_train, X_predict):
+def find_coefficients(logreg, X_train_scaled, X_train, y_train): #, X_predict):
     # Fit the model (assuming X_train and y_train are already defined)
     logreg.fit(X_train_scaled, y_train)
 
@@ -26,6 +26,9 @@ def find_probabilities(logreg, X_train_scaled, X_train, y_train, X_predict):
     coef_df = coef_df.sort_values(by='AbsCoefficient', ascending=False)
     print("coef_df ", coef_df)
 
+    return coefficients
+
+def find_probabilities(logreg, X_predict, coefficients):
     # Step 1: Get intercept
     intercept = logreg.intercept_
     # Step 2: Calculate logits
@@ -225,13 +228,11 @@ def edit_data(fights):
 # This is the main function
 def main(event):
     # Get odds csv and drop useless columns
-    # ufc_fights_new_stats_910_2.csv
     # odds = pd.read_csv("Data/ufc_combined_money_921_date.csv", index_col=0)
-    fights = pd.read_csv("Data/ufc_combined_0925.csv", index_col=0)
-    # fights.drop('born_year 1', axis=1, inplace=True)
-    # fights.drop('born_year 2', axis=1, inplace=True)
+    fights = pd.read_csv("Data/ufc_combined_0927_5.csv", index_col=0)
 
     # Get odds and winners from Event to predict
+
     # fights_predict = odds[odds['Event'].str.contains(event, case=False, na=False)].copy()
     # odds_predict = fights_predict[['Fighter 1 Odds', 'Fighter 2 Odds']].copy()
     # edit_data(fights_predict)
@@ -256,8 +257,11 @@ def main(event):
     # Assuming y_test are the true labels and y_pred are the predicted labels
     find_accuracy(y_test, y_pred)
 
-    #Find probabilites for each fight
-    # probabilities = find_probabilities(logreg, X_train_scaled, X_train, y_train, X_predict)
+    #Find coefficients for each stat
+    coefficients = find_coefficients(logreg, X_train_scaled, X_train, y_train) #, X_predict)
+
+    #Find probabilites for specific fights
+    # probabilities = find_probabilities(logreg, X_predict, coefficients)
 
     # Find bets
     # bets = find_bets(odds_predict, fights_predict, probabilities)

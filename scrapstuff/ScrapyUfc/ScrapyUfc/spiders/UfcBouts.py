@@ -5,8 +5,8 @@ import scrapy
 class UfcBoutsSpider(scrapy.Spider):
     name = "UfcBouts"
     allowed_domains = ["ufcstats.com"]
-    # start_urls = ["http://ufcstats.com/statistics/events/completed?page=all"]
-    start_urls = ["http://ufcstats.com/statistics/events/upcoming?page=all"]
+    start_urls = ["http://ufcstats.com/statistics/events/completed?page=all"]
+    # start_urls = ["http://ufcstats.com/statistics/events/upcoming?page=all"]
     # http://ufcstats.com/statistics/events/upcoming?page=all
     # start_urls = ["http://ufcstats.com/statistics/events/search?query=ufc+306"]
 
@@ -44,7 +44,7 @@ class UfcBoutsSpider(scrapy.Spider):
 
                 fighters = bout.css("td.b-fight-details__table-col.l-page_align_left a.b-link::text").getall()
 
-                # print("fighters", fighters)
+                print("fighters", fighters)
 
                 # Extract stats for both fighters
                 kd = bout.css("td.b-fight-details__table-col:nth-child(3) p.b-fight-details__table-text::text").getall()
@@ -57,9 +57,11 @@ class UfcBoutsSpider(scrapy.Spider):
                 time = bout.css("td.b-fight-details__table-col:nth-child(10) p.b-fight-details__table-text::text").get(default="").strip()
 
                 # Extract the link to the fight details page
-                fight_link = bout.css('td.b-fight-details__table-col:nth-child(1) p a::attr(href)').get()
+                # fight_link = bout.css('td.b-fight-details__table-col:nth-child(1) p a::attr(href)').get()
+                # Extract fight link from the onclick attribute
+                fight_link = bout.attrib.get('onclick', '').split("'")[1]
 
-                # print("fight_link", fight_link)
+                print("fight_link", fight_link)
 
                 # Create a dictionary to pass the current data to the next request
                 bout_data = {
@@ -85,6 +87,8 @@ class UfcBoutsSpider(scrapy.Spider):
                 }
 
                 if fight_link:
+                    print("fight_link ", fight_link)
+                    print("fighters ", fighters)
                     # Follow the fight link to get more details
                     yield scrapy.Request(
                         url=response.urljoin(fight_link),
@@ -92,45 +96,10 @@ class UfcBoutsSpider(scrapy.Spider):
                         meta={"bout_data": bout_data}
                     )
                 else:
+                    print("SHIT")
                     yield bout_data
-                # # Follow the fight link to get more details
-                # yield scrapy.Request(
-                #     url=response.urljoin(fight_link),
-                #     callback=self.parse_fight_details,
-                #     meta={"bout_data": bout_data}
-                # )
-
-    # def parse_fight_details(self, response):
-    #     bout_data = response.meta["bout_data"]
-
-    #     # Extract the fight statistics for each fighter
-    #     fighter_1_stats = []
-    #     fighter_2_stats = []
-
-    #     for i, stat_col in enumerate(response.css("td.b-fight-details__table-col")):
-    #         if i == 0:
-    #             continue
-    #         stats = stat_col.css("p.b-fight-details__table-text::text").getall()
-
-    #         if len(stats) >= 2:
-    #             fighter_1_stats.append(stats[0].strip())
-    #             fighter_2_stats.append(stats[1].strip())
-
-    #         # Stop after collecting the first 10 stats for each fighter
-    #         if len(fighter_1_stats) == 10 and len(fighter_2_stats) == 10:
-    #             break
-
-    #     # Ensure there are exactly 10 stats for each fighter, pad with empty strings if necessary
-    #     fighter_1_stats += [""] * (10 - len(fighter_1_stats))
-    #     fighter_2_stats += [""] * (10 - len(fighter_2_stats))
-
-    #     # Add these details to the bout_data
-    #     bout_data.update({
-    #         "Fight Stat 1": fighter_1_stats,
-    #         "Fight Stat 2": fighter_2_stats,
-    #     })
-
-    #     yield bout_data
+                
+                # yield bout_data
 
     def parse_fight_details(self, response):
         bout_data = response.meta["bout_data"]
@@ -140,17 +109,21 @@ class UfcBoutsSpider(scrapy.Spider):
         fighter_2_stats = []
 
         column_names = response.css('thead.b-fight-details__table-head tr.b-fight-details__table-row th.b-fight-details__table-col::text').getall()
+        print("column_names ", column_names)
         column_names = [name.strip() for name in column_names if name.strip()][1:]  # Skip the first empty column name
+        print("column_names ", column_names)
 
         for i, stat_col in enumerate(response.css("td.b-fight-details__table-col")):
             if i == 0:
                 continue
             stats = stat_col.css("p.b-fight-details__table-text::text").getall()
-
+            print("stats ", stats)
             if len(stats) >= 2:
                 fighter_1_stats.append(stats[0].strip())
                 fighter_2_stats.append(stats[1].strip())
 
+            print("fighter_1_stats ", fighter_1_stats)
+            print("fighter_2_stats ", fighter_2_stats)
             # Stop after collecting the first 9 stats for each fighter
             if len(fighter_1_stats) == 9 and len(fighter_2_stats) == 9:
                 break

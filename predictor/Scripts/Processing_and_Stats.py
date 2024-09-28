@@ -9,17 +9,18 @@ def get_year(dob):
 # This is tricky
 def fix_duplicates(fighters, bouts_clean):
     # check if there are fighters with the same name
+    print("DUPLICATES")
     print(fighters[fighters.duplicated(subset="Name", keep=False)])
     print("")
     name_col_index = fighters.columns.get_loc('Name')
 
-    fighters.drop(3334, inplace=True)
-    fighters.iloc[3317, name_col_index] = "Bruno Silva 185"
-    fighters.drop(2660, inplace=True)
-    fighters.drop(2282, inplace=True)
-    fighters.drop(1543, inplace=True)
-    fighters.drop(1491, inplace=True)
-    fighters.drop(399, inplace=True)
+    fighters.drop(3332, inplace=True) #Jean Silva
+    fighters.iloc[3313, name_col_index] = "Bruno Silva 185"
+    fighters.drop(2661, inplace=True) #Joey Gomez 155
+    fighters.drop(2085, inplace=True) #Mike Davis --
+    fighters.drop(1291, inplace=True) #Tony Johnson
+    fighters.drop(1286, inplace=True) #Tony Johnson
+    fighters.drop(497, inplace=True) #Michael McDonald 205
 
     print(fighters[fighters.duplicated(subset="Name", keep=False)])
 
@@ -65,30 +66,40 @@ def drop_edit_col_names(fighters):
 # Function to convert height to inches
 def height_to_inches(height):
     try:
-        # Split the height into feet and inches
+        # Check if height is NaN or contains '--'
         if pd.isna(height) or '--' in height:
             return None
-        parts = height.split("' ")
+        
+        # Remove any extra quotes and split the height into feet and inches
+        parts = height.replace('"', '').split("' ")
+        
+        # Extract feet and inches
         feet = int(parts[0])
-        inches = int(parts[1].replace('"', ''))
-
+        inches = int(parts[1]) if len(parts) > 1 else 0  # Default to 0 if no inches
+        
         # Convert to total inches
         total_inches = feet * 12 + inches
         return total_inches
     except (ValueError, IndexError):
         return None
-    
+
 def clean_fighter_stats(fighters):
     more_fighter_stats = fighters
     # Apply the function to the 'Ht' column
     more_fighter_stats['Ht'] = more_fighter_stats['Ht'].apply(height_to_inches)
-    # Assuming 'Reach' is the name of your column
+    
+    # Clean the 'Reach' column
     more_fighter_stats['Reach'] = more_fighter_stats['Reach'].str.replace('"', '', regex=False)
+    
+    # Drop unnecessary columns
     more_fighter_stats.drop("Wt", axis=1, inplace=True)
     more_fighter_stats.drop("DOB", axis=1, inplace=True)
+    
     return more_fighter_stats
 
 def create_fighter_dictionaries(bouts_clean, unique_fighters, more_fighter_stats):
+    print("bouts_clean.columns ", bouts_clean.columns)
+    print("more_fighter_stats.columns ", more_fighter_stats.columns)
     # Create Dictionary of Dataframes for each fighter's career in UFC
     fighter_dfs = {}
     for fighter in unique_fighters:
@@ -132,15 +143,16 @@ def create_fighter_dictionaries(bouts_clean, unique_fighters, more_fighter_stats
             else:
                 print(f"No additional stats found for fighter: {fighter}")
 
+            # tricky
+            # fighter_df.drop(["Unnamed: 0"], inplace=True, axis=1)
+
             # Store the updated DataFrame in the dictionary
             fighter_dfs[fighter] = fighter_df
 
-        
-        if fighter == 'Gilbert Burns':
+        if fighter == 'Valter Walker':
             print(fighter_df)
-            fighter_df.to_csv("Data/burns.csv")
+            fighter_df.to_csv("Data/valter.csv")
         
-    
     return fighter_dfs
 
 def initialize_columns(fighter_df):
@@ -163,6 +175,8 @@ def initialize_columns(fighter_df):
     return fighter_df
 
 def initialize_running_stats(fighter_df):
+    # if fighter_df['NAme'] == 'Nah-Shon Burrell':
+    #     print(fighter_df)
     running_stats = {
         "wins": 0.0,  
         "losses": 0.0,
@@ -239,7 +253,10 @@ def update_physical(i, fighter_df, more_fighter_stats, fighter):
         if not np.isnan(opponent_ht) and not np.isnan(ht):
             fighter_df.loc[fighter_df.index[i], 'Ht Diff'] = ht - opponent_ht
         else:
-            print(f"Empty value for height for fighter: {fighter}")
+            if np.isnan(opponent_ht):
+                print(f"Empty value for height for opponent: {opponent}")
+            if np.isnan(ht):
+                print(f"Empty value for height for fighter: {fighter}")
 
         #Reach
         # Get opponent's reach and fighter's reach as scalar values
@@ -481,12 +498,18 @@ def update_method(i, fighter_df, running_stats):
 
 def create_new_stats(fighter_dfs, more_fighter_stats):
     for fighter in fighter_dfs:
+        # print("fighter ", fighter)
         fighter_df = fighter_dfs[fighter]
 
+        # print("before initialize_columns ", fighter_df.columns)
         # Initialize all the new values with zeros
         fighter_df = initialize_columns(fighter_df)
 
+        # print("after initialize_columns ", fighter_df.columns)
+
         running_stats = initialize_running_stats(fighter_df)
+
+        # print("after initialize_running_stats ", fighter_df.columns)
 
         for i in range(len(fighter_df)):
             ### Update Stats
@@ -514,9 +537,9 @@ def create_new_stats(fighter_dfs, more_fighter_stats):
         # Add df to dictionary
         fighter_dfs[fighter] = fighter_df
 
-        if fighter == 'Gilbert Burns':
+        if fighter == 'Valter Walker':
             print(fighter_df)
-            fighter_df.to_csv("Data/burns_new_stats.csv")
+            fighter_df.to_csv("Data/valter_new_stats.csv")
     
     return fighter_dfs
 
@@ -656,7 +679,7 @@ def randomize_winner(df):
     return df
 
 def clean_bouts_data(bouts):
-    print("bouts columns ", bouts.columns)
+    # print("bouts columns ", bouts.columns)
     bouts['W/L 1'] = bouts['W/L 1'].fillna('loss')
     bouts = bouts.loc[bouts["W/L 1"].isin(["win", "loss"])].copy()
     # bouts.drop(["Unnamed: 0"], inplace=True, axis=1)
@@ -675,9 +698,9 @@ def prepare_data_for_analysis(combined_df):
     bouts = combined_df
 
     # Clean data
-    print("columns before clean ", bouts.columns)
+    # print("columns before clean ", bouts.columns)
     bouts = clean_bouts_data(bouts)
-    print("columns after clean ", bouts.columns)
+    # print("columns after clean ", bouts.columns)
 
     ## Randomize winner
     bouts = ensure_winner_is_fighter_1(bouts)
@@ -689,8 +712,14 @@ def prepare_data_for_analysis(combined_df):
 
 def main():
     # Get fighter and bouts data
-    fighters = pd.read_csv("Data/fighters15.csv")
-    bouts_clean = pd.read_csv("Data/bouts_913.csv")
+    # fighters = pd.read_csv("Data/fighters15.csv")
+    # bouts_clean = pd.read_csv("Data/bouts_913.csv")
+    fighters = pd.read_csv("Data/fighters_0927.csv")
+    bouts_clean = pd.read_csv("Data/bouts_0927_5.csv")
+
+    # Remove duplicate rows
+    # fighters = fighters.drop_duplicates(subset=fighters.columns) 
+    # bouts_clean = bouts_clean.drop_duplicates(subset=bouts_clean.columns)
 
     # Edit columns
     fighters = drop_edit_col_names(fighters)
@@ -714,11 +743,11 @@ def main():
     all_fights_combined = combine_all_fights(fighter_dfs)
     combined_df = combine_fighter_stats(all_fights_combined)
 
-    combined_df.to_csv("Data/combined_df_927.csv")
+    combined_df.to_csv("Data/combined_df_927_5.csv")
 
     # Back to processing before analysis
     bouts = prepare_data_for_analysis(combined_df)
-    bouts.to_csv("Data/ufc_combined_0927_2.csv")
+    bouts.to_csv("Data/ufc_combined_0927_5.csv")
 
 if __name__ == "__main__":
     main()

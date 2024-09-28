@@ -21,6 +21,7 @@ def is_fighter_page(soup, fighter_name):
 def extract_name_from_a(tag):
     return tag.get_text(strip=True) if tag else ''
 
+# Extract stats from fighter page
 def analyze_fighter_page(soup, fighter):
     fights = []
     table_body = soup.find('tbody')
@@ -58,6 +59,7 @@ def analyze_fighter_page(soup, fighter):
     df = pd.DataFrame(fights)
     return df
 
+# Get fighter url
 def analyze_search_results_page(soup, fighter, i):
     results = soup.find_all('tr')
     for result in results:
@@ -72,6 +74,7 @@ def analyze_search_results_page(soup, fighter, i):
     print(f"No exact match found for {fighter}")
     return None
 
+# Main function for getting fighter odds and stats
 def main(url, fighter, i):
     head = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36',
@@ -119,9 +122,8 @@ if __name__ == "__main__":
     # Ensure only one column is present or select the specific column
     column_name = df.columns[1]  # Assuming the first column is the one you want
     fighters = df[column_name].to_numpy()
+    
     # fighters = fighters[4000:]
-
-    # print("fighters ", fighters[0:4])
 
     all_fights = []
     for fighter in fighters:

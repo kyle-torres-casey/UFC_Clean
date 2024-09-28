@@ -86,7 +86,8 @@ def format_date_to_month_year(date_str):
 
 def main():
     odds_df = pd.read_csv('Data/combined_fight_odds_916.csv', index_col=0)
-    fights_df = pd.read_csv('Data/ufc_combined_0924_2.csv', index_col=0)   
+    fights_df = pd.read_csv('Data/ufc_combined_0924_2.csv', index_col=0)  
+     
     # Apply to the 'Date' column in fights_df
     fights_df['Date'] = fights_df['Date'].apply(format_date)
     # Apply this to the 'Date' column in your dataframe
