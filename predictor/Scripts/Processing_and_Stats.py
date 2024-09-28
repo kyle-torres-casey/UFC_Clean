@@ -7,26 +7,34 @@ def get_year(dob):
     return dob.split(", ")[-1]
 
 # This is tricky
-def fix_duplicates(fighters):
+def fix_duplicates(fighters, bouts_clean):
     # check if there are fighters with the same name
     print(fighters[fighters.duplicated(subset="Name", keep=False)])
+    print("")
+    name_col_index = fighters.columns.get_loc('Name')
 
     fighters.drop(3334, inplace=True)
-    fighters.iloc[3321, 0] = "Bruno Silva 185"
+    fighters.iloc[3317, name_col_index] = "Bruno Silva 185"
     fighters.drop(2660, inplace=True)
-    fighters.drop(2279, inplace=True)
-    fighters.iloc[1491, 0] = "Tony Johnson 265"
-    fighters.iloc[400, 0] = "Michael McDonald 205"
+    fighters.drop(2282, inplace=True)
+    fighters.drop(1543, inplace=True)
+    fighters.drop(1491, inplace=True)
+    fighters.drop(399, inplace=True)
+
+    print(fighters[fighters.duplicated(subset="Name", keep=False)])
+
+    # Add new names to bouts dataframe
+    for col in ["Fighter 1", "Fighter 2"]:
+        bouts_clean.loc[(bouts_clean[col] == "Bruno Silva") &
+        (bouts_clean["Weight class"] == "Middleweight"), col] = "Bruno Silva 185"
+
+    return fighters, bouts_clean
 
 def drop_edit_col_names(fighters):
     # Create Name column
     fighters['Name'] = fighters['First'].fillna('') + ' ' + fighters['Last'].fillna('')
     # Strip any leading or trailing whitespace (in case both First and Last are NaN)
     fighters['Name'] = fighters['Name'].str.strip()
-    # Reorder the columns in place
-    # columns = ['Name'] + [col for col in fighters.columns if col != 'Name']
-    # fighters[:] = fighters[columns]  # Modify in place by slicing
-    # fighters.set_index("Name", inplace=True)
 
     fighters.drop("Nickname", axis=1, inplace=True)
     fighters.drop("First", axis=1, inplace=True)
@@ -87,8 +95,8 @@ def create_fighter_dictionaries(bouts_clean, unique_fighters, more_fighter_stats
         # Filter rows where the fighter appears as either 'Fighter 1' or 'Fighter 2'
         fighter_df = bouts_clean[(bouts_clean['Fighter 1'] == fighter) | (bouts_clean['Fighter 2'] == fighter)].copy()
 
-        # Remove rows where 'W/L 1' is 'NC'
-        fighter_df = fighter_df[fighter_df['W/L 1'] != 'nc']
+        # Remove rows where 'W/L 1' is 'NC' and 'draw'
+        fighter_df = fighter_df[(fighter_df['W/L 1'] != 'nc') & (fighter_df['W/L 1'] != 'draw')]
 
         # Identify the rows where the fighter is 'Fighter 2'
         is_fighter2 = fighter_df['Fighter 2'] == fighter
@@ -126,6 +134,12 @@ def create_fighter_dictionaries(bouts_clean, unique_fighters, more_fighter_stats
 
             # Store the updated DataFrame in the dictionary
             fighter_dfs[fighter] = fighter_df
+
+        
+        if fighter == 'Gilbert Burns':
+            print(fighter_df)
+            fighter_df.to_csv("Data/burns.csv")
+        
     
     return fighter_dfs
 
@@ -291,14 +305,12 @@ def update_career_win_loss(i, fighter_df, running_stats):
 def update_win_loss(i, fighter_df, running_stats):
     ### Update for W, L, Num Fights, and W Perc
     result = fighter_df.iloc[i]['W/L 1']  # Assuming 'W/L 1' is the column that has 'W', 'L', or 'NC'
-    # Skip the record if the result is 'NC'
-    if result != 'nc':
-        if fighter_df.iloc[i]['W/L 1'] == 'win':
-            running_stats['wins'] += 1
-        else:
-            running_stats['losses'] += 1
-        running_stats['fights'] += 1
-        running_stats['w_perc'] = running_stats['wins'] / running_stats['fights']
+    if result == 'win':
+        running_stats['wins'] += 1
+    else:
+        running_stats['losses'] += 1
+    running_stats['fights'] += 1
+    running_stats['w_perc'] = running_stats['wins'] / running_stats['fights']
     fighter_df.loc[fighter_df.index[i + 1], 'W'] = running_stats['wins']
     fighter_df.loc[fighter_df.index[i + 1], 'L'] = running_stats['losses']
     fighter_df.loc[fighter_df.index[i + 1], 'Num Fights'] = running_stats['fights']
@@ -501,6 +513,10 @@ def create_new_stats(fighter_dfs, more_fighter_stats):
 
         # Add df to dictionary
         fighter_dfs[fighter] = fighter_df
+
+        if fighter == 'Gilbert Burns':
+            print(fighter_df)
+            fighter_df.to_csv("Data/burns_new_stats.csv")
     
     return fighter_dfs
 
@@ -531,8 +547,6 @@ def combine_fighter_stats(all_fights_combined):
 
     # Track processed indices to avoid re-processing
     processed_indices = set()
-
-    print("poop ", all_fights_combined.columns)
 
     # Iterate over each row to find and combine matching rows
     for idx, row1 in all_fights_combined.iterrows():
@@ -650,6 +664,8 @@ def clean_bouts_data(bouts):
     columns = ['Winner'] + [col for col in bouts.columns if col != 'Winner']
     bouts = bouts[columns]  
     bouts.drop(["W/L 1"], inplace=True, axis=1)
+    bouts.drop("born_year 1", axis=1, inplace=True)
+    bouts.drop("born_year 2", axis=1, inplace=True)
     bouts["Winner"] = bouts["Winner"] == bouts["Fighter 1"]
     bouts["Winner"] = bouts["Winner"].astype(int)
     bouts["Winner"].value_counts()
@@ -667,14 +683,6 @@ def prepare_data_for_analysis(combined_df):
     bouts = ensure_winner_is_fighter_1(bouts)
     bouts = randomize_winner(bouts)
 
-    # Edit duplicate names, tricky
-    for col in ["Fighter 1", "Fighter 2"]:
-        bouts.loc[(bouts[col] == "Michael McDonald") &
-                        (bouts["Weight class"] == "Light Heavyweight"), col] = "Michael McDonald 205"
-        bouts.loc[(bouts[col] == "Tony Johnson") &
-                        (bouts["Weight class"] == "Heavyweight"), col] = "Tony Johnson 265"
-        bouts.loc[(bouts[col] == "Bruno Silva") &
-                        (bouts["Weight class"] == "Middleweight"), col] = "Bruno Silva 185"
     bouts.reset_index(inplace=True, drop=True)
 
     return bouts
@@ -686,6 +694,9 @@ def main():
 
     # Edit columns
     fighters = drop_edit_col_names(fighters)
+
+    # print(fighters[fighters.duplicated(subset="Name", keep=False)])
+    fighters, bouts_clean = fix_duplicates(fighters, bouts_clean)
 
     # Invidual fighter stats
     more_fighter_stats = clean_fighter_stats(fighters)
@@ -703,11 +714,11 @@ def main():
     all_fights_combined = combine_all_fights(fighter_dfs)
     combined_df = combine_fighter_stats(all_fights_combined)
 
-    combined_df.to_csv("Data/combined_df_925.csv")
+    combined_df.to_csv("Data/combined_df_927.csv")
 
     # Back to processing before analysis
     bouts = prepare_data_for_analysis(combined_df)
-    bouts.to_csv("Data/ufc_combined_0925.csv")
+    bouts.to_csv("Data/ufc_combined_0927_2.csv")
 
 if __name__ == "__main__":
     main()

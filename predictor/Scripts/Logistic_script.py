@@ -228,8 +228,8 @@ def main(event):
     # ufc_fights_new_stats_910_2.csv
     # odds = pd.read_csv("Data/ufc_combined_money_921_date.csv", index_col=0)
     fights = pd.read_csv("Data/ufc_combined_0925.csv", index_col=0)
-    fights.drop('born_year 1', axis=1, inplace=True)
-    fights.drop('born_year 2', axis=1, inplace=True)
+    # fights.drop('born_year 1', axis=1, inplace=True)
+    # fights.drop('born_year 2', axis=1, inplace=True)
 
     # Get odds and winners from Event to predict
     # fights_predict = odds[odds['Event'].str.contains(event, case=False, na=False)].copy()

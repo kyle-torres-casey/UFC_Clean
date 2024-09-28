@@ -5,17 +5,17 @@ import scrapy
 class UfcBoutsSpider(scrapy.Spider):
     name = "UfcBouts"
     allowed_domains = ["ufcstats.com"]
-    # start_urls = ["http://ufcstats.com/statistics/events/completed?page=all"]
-    start_urls = ["http://ufcstats.com/statistics/events/upcoming?page=all"]
+    start_urls = ["http://ufcstats.com/statistics/events/completed?page=all"]
+    # start_urls = ["http://ufcstats.com/statistics/events/upcoming?page=all"]
     # http://ufcstats.com/statistics/events/upcoming?page=all
     # start_urls = ["http://ufcstats.com/statistics/events/search?query=ufc+306"]
 
     def parse(self, response):
         for event in response.css("td.b-statistics__table-col"):
-            print("poop " , event)
+            # print("poop " , event)
             event_name = event.css("i.b-statistics__table-content a::text").get()
             event_link = event.css("i.b-statistics__table-content a::attr(href)").get()
-            print("event_link", event_link)
+            # print("event_link", event_link)
 
             yield scrapy.Request(
                 response.urljoin(event_link),
@@ -33,7 +33,7 @@ class UfcBoutsSpider(scrapy.Spider):
         date = date_item.strip() if date_item else ""
         location = location_item.strip() if location_item else ""
 
-        print("date", date)
+        # print("date", date)
 
         for bout in response.css("tr.b-fight-details__table-row"):
             if bout.css("td.b-fight-details__table-col p.b-fight-details__table-text::text").get():
@@ -44,7 +44,7 @@ class UfcBoutsSpider(scrapy.Spider):
 
                 fighters = bout.css("td.b-fight-details__table-col.l-page_align_left a.b-link::text").getall()
 
-                print("fighters", fighters)
+                # print("fighters", fighters)
 
                 # Extract stats for both fighters
                 kd = bout.css("td.b-fight-details__table-col:nth-child(3) p.b-fight-details__table-text::text").getall()
@@ -59,7 +59,7 @@ class UfcBoutsSpider(scrapy.Spider):
                 # Extract the link to the fight details page
                 fight_link = bout.css('td.b-fight-details__table-col:nth-child(1) p a::attr(href)').get()
 
-                print("fight_link", fight_link)
+                # print("fight_link", fight_link)
 
                 # Create a dictionary to pass the current data to the next request
                 bout_data = {
