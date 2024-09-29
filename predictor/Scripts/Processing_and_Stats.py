@@ -715,7 +715,8 @@ def main():
     # fighters = pd.read_csv("Data/fighters15.csv")
     # bouts_clean = pd.read_csv("Data/bouts_913.csv")
     fighters = pd.read_csv("Data/fighters_0927.csv")
-    bouts_clean = pd.read_csv("Data/bouts_0927_5.csv")
+    # bouts_clean = pd.read_csv("Data/bouts_0927_5.csv")
+    bouts_clean = pd.read_csv('Data/bouts_0928_with_paris.csv')
 
     # Remove duplicate rows
     # fighters = fighters.drop_duplicates(subset=fighters.columns) 
@@ -743,11 +744,11 @@ def main():
     all_fights_combined = combine_all_fights(fighter_dfs)
     combined_df = combine_fighter_stats(all_fights_combined)
 
-    combined_df.to_csv("Data/combined_df_927_5.csv")
+    combined_df.to_csv("Data/combined_df_928.csv")
 
     # Back to processing before analysis
     bouts = prepare_data_for_analysis(combined_df)
-    bouts.to_csv("Data/ufc_combined_0927_5.csv")
+    bouts.to_csv("Data/ufc_combined_0928.csv")
 
 if __name__ == "__main__":
     main()

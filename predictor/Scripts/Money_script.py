@@ -8,6 +8,7 @@ def find_fights_with_odds(fights_df, odds_df):
 
     # Iterate over each row in fights_df
     for idx1, row1 in fights_df.iterrows():
+        # print(row1)
         # Find the matching row in odds_df
         match = odds_df[((odds_df['Fighter 1'] == row1['Fighter 1']) & (odds_df['Fighter 2'] == row1['Fighter 2']) & (odds_df['Date'] == row1['Date'])) |
                         ((odds_df['Fighter 1'] == row1['Fighter 2']) & (odds_df['Fighter 2'] == row1['Fighter 1']) & (odds_df['Date'] == row1['Date']))]
@@ -27,6 +28,11 @@ def find_fights_with_odds(fights_df, odds_df):
             # Append the combined row to the list
             combined_rows.append(combined_row)
         else:
+            print("row1['Fighter 1'] ", row1['Fighter 1'])
+            print("row1['Fighter 2'] ", row1['Fighter 2'])
+
+            print("odds_df['Fighter 1'] ", odds_df['Fighter 1'])
+            print("odds_df['Fighter 2'] ", odds_df['Fighter 2'])
             # If there is no match, append the row from fights_df as is
             other_rows.append(row1.to_dict())
 
@@ -85,23 +91,30 @@ def format_date_to_month_year(date_str):
         return None  # or keep the original value by returning `date_str`
 
 def main():
-    odds_df = pd.read_csv('Data/combined_fight_odds_916.csv', index_col=0)
-    fights_df = pd.read_csv('Data/ufc_combined_0924_2.csv', index_col=0)  
-     
+    # odds_df = pd.read_csv('Data/combined_fight_odds_916.csv', index_col=0)
+    # fights_df = pd.read_csv('Data/ufc_combined_0924_2.csv', index_col=0)  
+    odds_df = pd.read_csv('Data/paris_odds_clean.csv', index_col=0)
+    fights_df = pd.read_csv("Data/ufc_combined_0928.csv", index_col=0)
+
+    # Get the odds and fights for the fight i want to predict
+    odds_df = odds_df[odds_df['Date'] == 'Sep 28th 2024']
+    fights_df = fights_df[fights_df['Event'] == 'UFC Fight Night: Moicano vs. Saint Denis']
+
+    # Replace occurrences in 'Fighter 1' and 'Fighter 2' columns
+    fights_df['Fighter 1'] = fights_df['Fighter 1'].replace('Daria Zhelezniakova', 'Darya Zheleznyakova')
+    fights_df['Fighter 2'] = fights_df['Fighter 2'].replace('Daria Zhelezniakova', 'Darya Zheleznyakova')
+    odds_df['Fighter'] = odds_df['Fighter'].str.replace('-', ' ')
+    odds_df['Opponent'] = odds_df['Opponent'].str.replace('-', ' ')
+
     # Apply to the 'Date' column in fights_df
     fights_df['Date'] = fights_df['Date'].apply(format_date)
-    # Apply this to the 'Date' column in your dataframe
     odds_df['Date'] = odds_df['Date'].apply(format_date_to_month_year)
     
     fights_df, odds_df = edit_dataframes(fights_df, odds_df)
-    fights_df.to_csv("Data/fights_df_check_924.csv")
-    odds_df.to_csv("Data/odds_df_check_924.csv")
 
     combined_df, other_df = find_fights_with_odds(fights_df, odds_df)
-    # combined_df['Date'] = combined_df['Date'].str[-4:]
-    # combined_df['Date'] = combined_df['Date'].astype(int)
 
-    combined_df.to_csv("Data/ufc_combined_money_924_date.csv")
+    combined_df.to_csv("Data/ufc_combined_money_928_paris_2.csv")
 
 if __name__ == "__main__":
     main()

@@ -66,6 +66,7 @@ def plot_cnf(y_test, y_pred):
     plt.show()
 
 def predict_fights(odds):
+    print("len(odds) ",len(odds))
     # Split the data into features (X) and target (y)
     X = odds.drop(columns=['Winner'])  # Features (all columns except 'Winner')
     y = odds['Winner']                 # Target variable
@@ -83,6 +84,9 @@ def predict_fights(odds):
 
     # Predict with the test data
     y_pred = logreg.predict(X_test_scaled)
+
+    print("len(y_pred) ", len(y_pred))
+    print("y_pred ", y_pred)
 
     return X_train_scaled, X_train, y_train, logreg, y_pred, X_test, y_test
 
@@ -129,6 +133,8 @@ def find_bets(odds, fights, probabilities):
             bet = 0
         bets.append(bet)
         print("Bet ", bet)
+
+        print("if i win, here is money back ", bet*dec_odds - bet)
 
         if my_winner == fights['Winner'].to_list()[i]:
             money_won = bet*dec_odds - bet
@@ -229,30 +235,37 @@ def edit_data(fights):
 def main(event):
     # Get odds csv and drop useless columns
     # odds = pd.read_csv("Data/ufc_combined_money_921_date.csv", index_col=0)
-    fights = pd.read_csv("Data/ufc_combined_0927_5.csv", index_col=0)
+    fights = pd.read_csv("Data/ufc_combined_0928.csv", index_col=0)
+    fights.drop(columns=['Unnamed: 0'], inplace=True)
 
-    # Get odds and winners from Event to predict
-
-    # fights_predict = odds[odds['Event'].str.contains(event, case=False, na=False)].copy()
-    # odds_predict = fights_predict[['Fighter 1 Odds', 'Fighter 2 Odds']].copy()
-    # edit_data(fights_predict)
-    # X = fights_predict.drop(columns=['Winner'])  # Features (all columns except 'Winner')
-    # scaler = StandardScaler()
-    # X_predict = scaler.fit_transform(X)
-
+    # Create a new DataFrame 'Paris_fights' with rows where 'Event' is 'UFC Paris'
+    # Paris_fights = fights[fights['Event'] == 'UFC Fight Night: Moicano vs. Saint Denis']
+    # print("Paris_fights ",Paris_fights)
+    # Drop those rows from the original DataFrame 'bouts'
+    fights = fights[fights['Event'] != 'UFC Fight Night: Moicano vs. Saint Denis']
     # Edit data for odds/fights
-    print("before ",fights.columns)
     edit_data(fights)
-    print("after ", fights.columns)
-
     # Predict fights
     X_train_scaled, X_train, y_train, logreg, y_pred, X_test, y_test = predict_fights(fights)
 
+
+    Paris_fights = pd.read_csv("Data/ufc_combined_money_928_paris_2.csv", index_col=0)
+    odds_predict = Paris_fights[['Fighter 1 Odds', 'Fighter 2 Odds']].copy()
+    Paris_fights.drop(columns=['Fighter 1 Odds', 'Fighter 2 Odds', 'Unnamed: 0'], inplace=True)
+
+    #Paris data
+    edit_data(Paris_fights)
+    X = Paris_fights.drop(columns=['Winner'])  # Features (all columns except 'Winner')
+    scaler = StandardScaler()
+    X_predict = scaler.fit_transform(X)
+
+
     # Some data analysis of regression
-    plot_cnf(y_test, y_pred)
-    get_classification(y_test, y_pred)
-    plot_auc(X_test, y_test,logreg)
+    # plot_cnf(y_test, y_pred)
+    # get_classification(y_test, y_pred)
+    # plot_auc(X_test, y_test,logreg)
     calc_stat_importance(fights)
+
 
     # Assuming y_test are the true labels and y_pred are the predicted labels
     find_accuracy(y_test, y_pred)
@@ -261,10 +274,13 @@ def main(event):
     coefficients = find_coefficients(logreg, X_train_scaled, X_train, y_train) #, X_predict)
 
     #Find probabilites for specific fights
-    # probabilities = find_probabilities(logreg, X_predict, coefficients)
+    probabilities = find_probabilities(logreg, X_predict, coefficients)
+
+    print(probabilities)
 
     # Find bets
     # bets = find_bets(odds_predict, fights_predict, probabilities)
+    bets = find_bets(odds_predict, Paris_fights, probabilities)
 
 # Entry point of the script
 if __name__ == "__main__":
