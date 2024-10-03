@@ -115,16 +115,12 @@ def main(url, fighter, i):
 
 if __name__ == "__main__":
     # Read the CSV file
-    # df = pd.read_csv('fighter_names.csv')
-    df = pd.read_csv('names_paris_0928.csv')
-    # df = pd.read_csv('missing_fighters_916.csv')
+    df = pd.read_csv('names_307.csv')
     
     df['Name'] = df['Name'].str.replace(' ', '-')
     # Ensure only one column is present or select the specific column
     column_name = df.columns[1]  # Assuming the first column is the one you want
     fighters = df[column_name].to_numpy()
-
-    # fighters = fighters[4000:]
 
     all_fights = []
     for fighter in fighters:
@@ -136,7 +132,6 @@ if __name__ == "__main__":
     # Concatenate all the dataframes into one
     if all_fights:
         final_df = pd.concat(all_fights, ignore_index=True)
-        final_df.to_csv('fights_odds_paris_fighters.csv', index=False)
-        # print(final_df)
+        final_df.to_csv('fights_odds_307_fighters.csv', index=False)
     else:
         print("No dataframes to concatenate.")

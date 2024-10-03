@@ -92,9 +92,9 @@ def predict_fights(odds):
 
 def find_bets(odds, fights, probabilities):
     total_money = 100
-    profit = 0
     bets = []
-    winnings = []
+    profit = 0 #For fights that have happened
+    winnings = [] #For fights that have happened
     print("all odds ", odds)
     print("actual winners ",fights['Winner'].to_list())
     print("probabilities ", probabilities)
@@ -107,6 +107,9 @@ def find_bets(odds, fights, probabilities):
         odd2 = odds.iloc[i]['Fighter 2 Odds']
         print("odd1 ", odd1)
         print("odd2 ", odd2)
+        print("fighter 1 ", odds.iloc[i]['Fighter 1'])
+        print("fighter 2 ", odds.iloc[i]['Fighter 2'])
+        print("winner ", fights['Winner'].to_list()[i])
 
         # Find decimal odds for who to bet on
         if (prob >= 0.5).astype(int):
@@ -123,7 +126,6 @@ def find_bets(odds, fights, probabilities):
         print("decimal odds ", dec_odds)
         
         # Calculate percentage bet
-        # fraction = (dec_odds*prob - 1 + prob)/dec_odds
         fraction = prob - (1-prob)/(dec_odds-1)
         print("Percent to bet ", fraction)
 
@@ -136,6 +138,8 @@ def find_bets(odds, fights, probabilities):
 
         print("if i win, here is money back ", bet*dec_odds - bet)
 
+
+        ### Only use this for fights that have HAPPENED
         if my_winner == fights['Winner'].to_list()[i]:
             money_won = bet*dec_odds - bet
             print("money won ", money_won)
@@ -148,7 +152,7 @@ def find_bets(odds, fights, probabilities):
         winnings.append(money_won)
         
     print("profit ", profit)
-    return bets
+    return bets, profit
 
 def calc_stat_importance(odds):
     # Assuming you have a DataFrame called df with your features and target variable
@@ -159,7 +163,7 @@ def calc_stat_importance(odds):
         'Sig Str % Opp Diff', 'Strikes Avg Diff', 'Str % Diff',
         'Strikes Opp Avg Diff', 'Str % Opp Diff', 'TD Avg Diff', 'TD % Diff',
         'TD Opp Avg Diff', 'TD % Opp Diff', 'KD Avg Diff', 'KD Opp Avg Diff',
-        'DEC Avg Diff', 'KO Avg Diff', 'SUB Avg Diff', 'DEC Opp Avg Diff',
+        'KO Avg Diff', 'SUB Avg Diff',
         'KO Opp Avg Diff', 'SUB Opp Avg Diff', 'CTRL Avg Diff',
         'CTRL Opp Avg Diff', 'Time Avg Diff', 'Streak Diff', 'Age Diff',
          'Stance Diff', 'Career Fights Diff', 'Career W Perc Diff']
@@ -203,8 +207,8 @@ def edit_data(fights):
         'W Perc', 'Sig Strikes Avg', 'Sig Str %', 'Sig Strikes Opp Avg',
         'Sig Str % Opp', 'Strikes Avg', 'Str %', 'Strikes Opp Avg',
         'Str % Opp', 'TD Avg', 'TD %', 'TD Opp Avg', 'TD % Opp',
-        'KD Avg', 'KD Opp Avg', 'DEC Avg', 'KO Avg', 'SUB Avg',
-        'DEC Opp Avg', 'KO Opp Avg', 'SUB Opp Avg', 'CTRL Avg',
+        'KD Avg', 'KD Opp Avg', 'KO Avg', 'SUB Avg',
+        'KO Opp Avg', 'SUB Opp Avg', 'CTRL Avg',
         'CTRL Opp Avg', 'Time Avg', 'Streak', 'Age',
          'Stance' ,'Career Fights', 'Career W Perc'
     ]
@@ -218,6 +222,11 @@ def edit_data(fights):
     cols_to_drop = [f"{stat} 1" for stat in stats] + [f"{stat} 2" for stat in stats]
     fights.drop(columns=cols_to_drop, inplace=True)
 
+    fights.drop('DEC Avg 1', axis=1, inplace=True)
+    fights.drop('DEC Opp Avg 1', axis=1, inplace=True)
+    fights.drop('DEC Avg 2', axis=1, inplace=True)
+    fights.drop('DEC Opp Avg 2', axis=1, inplace=True)
+
     fights.drop('Date', axis=1, inplace=True)
     # fights.drop('Fighter 1 Odds', axis=1, inplace=True)
     # fights.drop('Fighter 2 Odds', axis=1, inplace=True)
@@ -230,59 +239,142 @@ def edit_data(fights):
     fights.drop('Reach Diff 2', axis=1, inplace=True)
     fights.rename(columns={'Ht Diff 1': 'Ht Diff'}, inplace=True)
     fights.rename(columns={'Reach Diff 1': 'Reach Diff'}, inplace=True)
+    return fights
+
+def align_odds(odds_event, fights_event):
+    # Create a mask to keep track of which fights to keep in fights_event
+    fights_to_keep = []
+    odds_to_keep = []
+
+    for i, row in fights_event.iterrows():
+        fighter1 = row['Fighter 1'].lower()  # Convert to lower case
+        fighter2 = row['Fighter 2'].lower()  # Convert to lower case
+
+        # Find the corresponding row in odds_event with case-insensitive comparison
+        mask = (odds_event['Fighter 1'].str.lower().isin([fighter1, fighter2])) & \
+               (odds_event['Fighter 2'].str.lower().isin([fighter1, fighter2]))
+
+        if mask.any():  # Check if there is a matching row
+            odds_row = odds_event[mask].copy()
+
+            # Reorder Fighter 1 and Fighter 2 in odds_event
+            if odds_row['Fighter 1'].values[0].lower() != fighter1:
+                odds_event.loc[mask, ['Fighter 1', 'Fighter 2']] = odds_row[['Fighter 2', 'Fighter 1']].values
+                odds_event.loc[mask, ['Fighter 1 Odds', 'Fighter 2 Odds']] = odds_row[['Fighter 2 Odds', 'Fighter 1 Odds']].values
+            
+            # Keep this fight in fights_to_keep
+            fights_to_keep.append(i)
+
+            odds_to_keep.extend(odds_event.index[mask].tolist())
+        else:
+            print("poop ", fighter1)
+            print("poop ", fighter2)
+
+    # Drop fights from fights_event that do not have corresponding odds
+    fights_event = fights_event.loc[fights_to_keep].reset_index(drop=True)
+
+    # Drop fights from odds_event that do not exist in fights_event
+    odds_event = odds_event.loc[odds_to_keep].reset_index(drop=True)
+
+    print("Updated odds_event:\n", odds_event)
+    print("Updated fights_event:\n", fights_event)
+    
+    return odds_event, fights_event
+
 
 # This is the main function
 def main(event):
-    # Get odds csv and drop useless columns
+    # # Get odds csv and drop useless columns
     # odds = pd.read_csv("Data/ufc_combined_money_921_date.csv", index_col=0)
-    fights = pd.read_csv("Data/ufc_combined_0928.csv", index_col=0)
-    fights.drop(columns=['Unnamed: 0'], inplace=True)
+    # fights = pd.read_csv("Data/ufc_combined_money_1004.csv", index_col=0)
 
-    # Create a new DataFrame 'Paris_fights' with rows where 'Event' is 'UFC Paris'
-    # Paris_fights = fights[fights['Event'] == 'UFC Fight Night: Moicano vs. Saint Denis']
-    # print("Paris_fights ",Paris_fights)
-    # Drop those rows from the original DataFrame 'bouts'
-    fights = fights[fights['Event'] != 'UFC Fight Night: Moicano vs. Saint Denis']
-    # Edit data for odds/fights
-    edit_data(fights)
-    # Predict fights
+    # # Create a new DataFrame for rows where 'Event' is 'UFC 307'
+    # fights_307 = fights[fights['Event'] == 'UFC 307'].copy()
+    # odds_307 = fights_307[['Fighter 1 Odds', 'Fighter 2 Odds']].copy()
+    # fights_307 = edit_data(fights_307)
+    # print(fights_307.iloc[0])
+    # X = fights_307.drop(columns=['Winner'])  # Features (all columns except 'Winner')
+    # scaler = StandardScaler()
+    # X_predict = scaler.fit_transform(X)
+
+    # # Drop those rows from the original DataFrame 'bouts'
+    # fights = fights[fights['Event'] != 'UFC 307']
+    # fights = edit_data(fights)
+    # X_train_scaled, X_train, y_train, logreg, y_pred, X_test, y_test = predict_fights(fights)
+
+
+    #--------
+    ### not using Money script
+    # fights = pd.read_csv("Data/ufc_combined_0928.csv", index_col=0)
+    # fights.drop('Unnamed: 0', axis=1, inplace=True)
+
+    # Separate new fights
+    fights = pd.read_csv("Data/ufc_combined_1004.csv", index_col=0)
+    fights['Fighter 1'] = fights['Fighter 1'].str.replace('-', ' ', regex=False)
+    fights['Fighter 2'] = fights['Fighter 2'].str.replace('-', ' ', regex=False)
+    fights['Fighter 1'] = fights['Fighter 1'].str.replace('.', '', regex=False)
+    fights['Fighter 2'] = fights['Fighter 2'].str.replace('.', '', regex=False)
+    fights_event = fights[fights['Event'].str.contains(event, na=False)].copy()
+    fights = fights[~fights['Event'].str.contains('UFC 307', na=False)]
+    print("fights_event ", fights_event)
+
+    # Get odds for newest fights
+    odds = pd.read_csv("Data/ufc_combined_money_1004.csv", index_col=0)
+    # odds_event = odds[odds['Event'] == event].copy()
+    odds_event = odds[odds['Event'].str.contains(event, na=False)].copy()
+    odds_event = odds_event[['Fighter 1','Fighter 2','Fighter 1 Odds','Fighter 2 Odds']]
+    print("odds_event ", odds_event)
+    odds_event, fights_event = align_odds(odds_event,fights_event)
+
+    # Prepare fights for predicting history
+    fights = edit_data(fights)
     X_train_scaled, X_train, y_train, logreg, y_pred, X_test, y_test = predict_fights(fights)
 
+    if not fights_event.empty:
+        # Prepare event stats for prediction
+        fights_event = edit_data(fights_event)
+        X = fights_event.drop(columns=['Winner'])  # Features (all columns except 'Winner')
+        scaler = StandardScaler()
+        X_predict = scaler.fit_transform(X)
 
-    Paris_fights = pd.read_csv("Data/ufc_combined_money_928_paris_2.csv", index_col=0)
-    odds_predict = Paris_fights[['Fighter 1 Odds', 'Fighter 2 Odds']].copy()
-    Paris_fights.drop(columns=['Fighter 1 Odds', 'Fighter 2 Odds', 'Unnamed: 0'], inplace=True)
+        ### --------
+        ### Analysis
+        # Some data analysis of regression
+        # plot_cnf(y_test, y_pred)
+        # get_classification(y_test, y_pred)
+        # plot_auc(X_test, y_test,logreg)
+        calc_stat_importance(fights)
 
-    #Paris data
-    edit_data(Paris_fights)
-    X = Paris_fights.drop(columns=['Winner'])  # Features (all columns except 'Winner')
-    scaler = StandardScaler()
-    X_predict = scaler.fit_transform(X)
+        # Assuming y_test are the true labels and y_pred are the predicted labels
+        find_accuracy(y_test, y_pred)
 
+        #Find coefficients for each stat
+        coefficients = find_coefficients(logreg, X_train_scaled, X_train, y_train) #, X_predict)
 
-    # Some data analysis of regression
-    # plot_cnf(y_test, y_pred)
-    # get_classification(y_test, y_pred)
-    # plot_auc(X_test, y_test,logreg)
-    calc_stat_importance(fights)
+        #Find probabilites for specific fights
+        probabilities = find_probabilities(logreg, X_predict, coefficients)
+        print(probabilities)
+        print(odds_event)
 
+        # Find bets
+        bets, profit = find_bets(odds_event, fights_event, probabilities)
 
-    # Assuming y_test are the true labels and y_pred are the predicted labels
-    find_accuracy(y_test, y_pred)
-
-    #Find coefficients for each stat
-    coefficients = find_coefficients(logreg, X_train_scaled, X_train, y_train) #, X_predict)
-
-    #Find probabilites for specific fights
-    probabilities = find_probabilities(logreg, X_predict, coefficients)
-
-    print(probabilities)
-
-    # Find bets
-    # bets = find_bets(odds_predict, fights_predict, probabilities)
-    bets = find_bets(odds_predict, Paris_fights, probabilities)
+        return profit, sum(bets)
+    else:
+        print("this event is fucked ", event)
+        return 0, 0
 
 # Entry point of the script
 if __name__ == "__main__":
-    # Find bets for a UFC event
-    main('UFC 300')
+    # events = ['UFC ' + str(i) for i in range(200,270)] # total profit  708.3983954721688
+    events = ['UFC ' + str(i) for i in range(260,290)] # total profit  708.3983954721688
+    total_profit = 0
+    total_bet = 0
+    for event in events:
+        # Find bets for a UFC event
+        profit, bet = main(event)
+        total_profit += profit
+        total_bet += bet
+
+    print("total_bet ", total_bet)
+    print("total profit ", total_profit)

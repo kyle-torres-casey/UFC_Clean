@@ -8,11 +8,17 @@ def find_fights_with_odds(fights_df, odds_df):
 
     # Iterate over each row in fights_df
     for idx1, row1 in fights_df.iterrows():
-        # print(row1)
-        # Find the matching row in odds_df
-        match = odds_df[((odds_df['Fighter 1'] == row1['Fighter 1']) & (odds_df['Fighter 2'] == row1['Fighter 2']) & (odds_df['Date'] == row1['Date'])) |
-                        ((odds_df['Fighter 1'] == row1['Fighter 2']) & (odds_df['Fighter 2'] == row1['Fighter 1']) & (odds_df['Date'] == row1['Date']))]
-    
+        # Normalize capitalization to lowercase before comparison
+        match = odds_df[
+            ((odds_df['Fighter 1'].str.lower() == row1['Fighter 1'].lower()) & 
+            (odds_df['Fighter 2'].str.lower() == row1['Fighter 2'].lower()) & 
+            (odds_df['Date'] == row1['Date'])) |
+            
+            ((odds_df['Fighter 1'].str.lower() == row1['Fighter 2'].lower()) & 
+            (odds_df['Fighter 2'].str.lower() == row1['Fighter 1'].lower()) & 
+            (odds_df['Date'] == row1['Date']))
+        ]
+
         if not match.empty:
             # Take the first matching row (assuming there is only one match)
             match = match.iloc[0]
@@ -28,11 +34,11 @@ def find_fights_with_odds(fights_df, odds_df):
             # Append the combined row to the list
             combined_rows.append(combined_row)
         else:
+            print("no match")
             print("row1['Fighter 1'] ", row1['Fighter 1'])
             print("row1['Fighter 2'] ", row1['Fighter 2'])
+            print("row1['Date'] ", row1['Date'])
 
-            print("odds_df['Fighter 1'] ", odds_df['Fighter 1'])
-            print("odds_df['Fighter 2'] ", odds_df['Fighter 2'])
             # If there is no match, append the row from fights_df as is
             other_rows.append(row1.to_dict())
 
@@ -42,6 +48,9 @@ def find_fights_with_odds(fights_df, odds_df):
 
     print("\nCombined DataFrame:")
     print(len(combined_df))
+    print(len(other_df))
+
+    other_df.to_csv("Data/other_combined_fights_1004.csv")
 
     return combined_df, other_df
 
@@ -57,7 +66,6 @@ def remove_duplicates(df):
     df = df.drop(columns=['Fighter A', 'Fighter B'])
     
     return df
-
 
 def edit_dataframes(fights_df, odds_df):
     odds_df['Fighter 1'] = odds_df['Fighter']
@@ -90,21 +98,38 @@ def format_date_to_month_year(date_str):
         print("fuck ", date)
         return None  # or keep the original value by returning `date_str`
 
+def edit_names(odds_df):    
+    # Edit different spellings
+    odds_df['Fighter'] = odds_df['Fighter'].replace('Joanne Calderwood', 'Joanne Wood')
+    odds_df['Opponent'] = odds_df['Opponent'].replace('Joanne Calderwood', 'Joanne Wood')
+    odds_df['Fighter'] = odds_df['Fighter'].replace('Ovince St Preux', 'Ovince Saint Preux')
+    odds_df['Opponent'] = odds_df['Opponent'].replace('Ovince St Preux', 'Ovince Saint Preux')
+    odds_df['Fighter'] = odds_df['Fighter'].replace('Darya Zheleznyakova', 'Daria Zhelezniakova')
+    odds_df['Opponent'] = odds_df['Opponent'].replace('Darya Zheleznyakova', 'Daria Zhelezniakova')
+    odds_df['Fighter'] = odds_df['Fighter'].replace('Sergey Spivak', 'Serghei Spivac')
+    odds_df['Opponent'] = odds_df['Opponent'].replace('Sergey Spivak', 'Serghei Spivac')
+    odds_df['Fighter'] = odds_df['Fighter'].replace('Stephen Erceg', 'Steve Erceg')
+    odds_df['Opponent'] = odds_df['Opponent'].replace('Stephen Erceg', 'Steve Erceg')
+
+    return odds_df
+
 def main():
     # odds_df = pd.read_csv('Data/combined_fight_odds_916.csv', index_col=0)
     # fights_df = pd.read_csv('Data/ufc_combined_0924_2.csv', index_col=0)  
-    odds_df = pd.read_csv('Data/paris_odds_clean.csv', index_col=0)
-    fights_df = pd.read_csv("Data/ufc_combined_0928.csv", index_col=0)
+    odds_df = pd.read_csv('Data/all_fight_odds_w307_1004_modified_2.csv', index_col=0)
+    fights_df = pd.read_csv("Data/ufc_combined_1004.csv", index_col=0)
 
-    # Get the odds and fights for the fight i want to predict
-    odds_df = odds_df[odds_df['Date'] == 'Sep 28th 2024']
-    fights_df = fights_df[fights_df['Event'] == 'UFC Fight Night: Moicano vs. Saint Denis']
+    odds_df = edit_names(odds_df)
 
-    # Replace occurrences in 'Fighter 1' and 'Fighter 2' columns
-    fights_df['Fighter 1'] = fights_df['Fighter 1'].replace('Daria Zhelezniakova', 'Darya Zheleznyakova')
-    fights_df['Fighter 2'] = fights_df['Fighter 2'].replace('Daria Zhelezniakova', 'Darya Zheleznyakova')
-    odds_df['Fighter'] = odds_df['Fighter'].str.replace('-', ' ')
-    odds_df['Opponent'] = odds_df['Opponent'].str.replace('-', ' ')
+    # Names with - and .
+    odds_df['Fighter'] = odds_df['Fighter'].str.replace('-', ' ', regex=False)
+    odds_df['Opponent'] = odds_df['Opponent'].str.replace('-', ' ', regex=False)
+    odds_df['Fighter'] = odds_df['Fighter'].str.replace('.', '', regex=False)
+    odds_df['Opponent'] = odds_df['Opponent'].str.replace('.', '', regex=False)
+    fights_df['Fighter 1'] = fights_df['Fighter 1'].str.replace('-', ' ', regex=False)
+    fights_df['Fighter 2'] = fights_df['Fighter 2'].str.replace('-', ' ', regex=False)
+    fights_df['Fighter 1'] = fights_df['Fighter 1'].str.replace('.', '', regex=False)
+    fights_df['Fighter 2'] = fights_df['Fighter 2'].str.replace('.', '', regex=False)
 
     # Apply to the 'Date' column in fights_df
     fights_df['Date'] = fights_df['Date'].apply(format_date)
@@ -114,7 +139,7 @@ def main():
 
     combined_df, other_df = find_fights_with_odds(fights_df, odds_df)
 
-    combined_df.to_csv("Data/ufc_combined_money_928_paris_2.csv")
+    combined_df.to_csv("Data/ufc_combined_money_1004.csv")
 
 if __name__ == "__main__":
     main()

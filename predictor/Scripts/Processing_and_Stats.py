@@ -161,8 +161,8 @@ def initialize_columns(fighter_df):
         'Sig Strikes Avg': 0.0, 'Sig Str %': 0.0, 'Sig Strikes Opp Avg': 0.0, 'Sig Str % Opp': 0.0,
         'Strikes Avg': 0.0, 'Str %': 0.0, 'Strikes Opp Avg': 0.0, 'Str % Opp': 0.0,
         'TD Avg': 0.0, 'TD %': 0.0, 'TD Opp Avg': 0.0, 'TD % Opp': 0.0,
-        'KD Avg': 0.0, 'KD Opp Avg': 0.0, 'DEC Avg': 0.0, 'KO Avg': 0.0, 'SUB Avg': 0.0,
-        'DEC Opp Avg': 0.0, 'KO Opp Avg': 0.0, 'SUB Opp Avg': 0.0,
+        'KD Avg': 0.0, 'KD Opp Avg': 0.0, 'KO Avg': 0.0, 'SUB Avg': 0.0,
+        'KO Opp Avg': 0.0, 'SUB Opp Avg': 0.0,
         'CTRL Avg': 0.0, 'CTRL Opp Avg': 0.0, 'Time Avg': 0.0, 'Streak': 0.0,
         'Ht Diff': 0.0, 'Reach Diff': 0.0, 'Age': 0.0
         # 'Career W': fighter_df['Career W'].values[len(fighter_df) -1 ], 
@@ -487,8 +487,6 @@ def update_method(i, fighter_df, running_stats):
             running_stats['running_sub_opp'] += 1
 
     # Update dataframe
-    fighter_df.loc[fighter_df.index[i + 1], 'DEC Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_dec']/running_stats['fights']
-    fighter_df.loc[fighter_df.index[i + 1], 'DEC Opp Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_dec_opp']/running_stats['fights']
     fighter_df.loc[fighter_df.index[i + 1], 'KO Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_ko']/running_stats['fights']
     fighter_df.loc[fighter_df.index[i + 1], 'KO Opp Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_ko_opp']/running_stats['fights']
     fighter_df.loc[fighter_df.index[i + 1], 'SUB Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_sub']/running_stats['fights']
@@ -560,8 +558,8 @@ def combine_fighter_stats(all_fights_combined):
     unique_stats = ['W', 'L', 'Num Fights', 'W Perc', 'Sig Strikes Avg', 'Sig Str %',
                     'Sig Strikes Opp Avg', 'Sig Str % Opp', 'Strikes Avg', 'Str %',
                     'Strikes Opp Avg', 'Str % Opp', 'TD Avg', 'TD %', 'TD Opp Avg',
-                    'TD % Opp', 'KD Avg', 'KD Opp Avg', 'DEC Avg', 'KO Avg',
-                    'SUB Avg', 'DEC Opp Avg', 'KO Opp Avg', 'SUB Opp Avg', 'CTRL Avg',
+                    'TD % Opp', 'KD Avg', 'KD Opp Avg', 'KO Avg',
+                    'SUB Avg', 'KO Opp Avg', 'SUB Opp Avg', 'CTRL Avg',
                     'CTRL Opp Avg', 'Time Avg', 'Streak', 'Career W', 'Career L', 'Career Fights', 'Career W Perc',
                     'Ht Diff', 'Reach Diff', 'Age', 'Stance','born_year']
 
@@ -707,16 +705,14 @@ def prepare_data_for_analysis(combined_df):
     bouts = randomize_winner(bouts)
 
     bouts.reset_index(inplace=True, drop=True)
+    bouts.drop(columns=['Unnamed: 0'], inplace=True)
 
     return bouts
 
 def main():
     # Get fighter and bouts data
-    # fighters = pd.read_csv("Data/fighters15.csv")
-    # bouts_clean = pd.read_csv("Data/bouts_913.csv")
     fighters = pd.read_csv("Data/fighters_0927.csv")
-    # bouts_clean = pd.read_csv("Data/bouts_0927_5.csv")
-    bouts_clean = pd.read_csv('Data/bouts_0928_with_paris.csv')
+    bouts_clean = pd.read_csv("Data/bouts_0929_with_307.csv")
 
     # Remove duplicate rows
     # fighters = fighters.drop_duplicates(subset=fighters.columns) 
@@ -744,11 +740,9 @@ def main():
     all_fights_combined = combine_all_fights(fighter_dfs)
     combined_df = combine_fighter_stats(all_fights_combined)
 
-    combined_df.to_csv("Data/combined_df_928.csv")
-
     # Back to processing before analysis
     bouts = prepare_data_for_analysis(combined_df)
-    bouts.to_csv("Data/ufc_combined_0928.csv")
+    bouts.to_csv("Data/ufc_combined_1004_2.csv")
 
 if __name__ == "__main__":
     main()
