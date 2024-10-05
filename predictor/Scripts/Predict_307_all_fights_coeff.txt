@@ -1,0 +1,153 @@
+actual winners  [0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1]
+probabilities  [0.29771647 0.78168309 0.36084982 0.48895735 0.35095753 0.57631258
+ 0.66227191 0.43630593 0.33708868 0.59297003 0.62736649]
+starting money  10
+
+odd1  -163.0
+odd2  120.0
+fighter 1  Kevin Holland
+fighter 2  Roman Dolidze
+winner  0
+predction: winner=0
+my winner prob  0.7022835256160336
+decimal odds  2.2
+Percent to bet  0.45418646362939497
+Bet  4.541864636293949
+if i win, here is money back  5.45023756355274
+money won  5.45023756355274
+
+odd1  -333.0
+odd2  250.0
+fighter 1  Cesar Almeida
+fighter 2  Ihor Potieria
+winner  0
+predction: winner=1
+my winner prob  0.7816830886613636
+decimal odds  1.3003003003003002
+Percent to bet  0.05468777390370416
+Bet  0.5468777390370416
+if i win, here is money back  0.16422754926037275
+money lost  -0.5468777390370416
+
+odd1  110.0
+odd2  -150.0
+fighter 1  Stephen Thompson
+fighter 2  Joaquin Buckley
+winner  1
+predction: winner=0
+my winner prob  0.6391501849359782
+decimal odds  1.6666666666666665
+Percent to bet  0.09787546233994537
+Bet  0.9787546233994537
+if i win, here is money back  0.6525030822663023
+money lost  -0.9787546233994537
+
+odd1  -175.0
+odd2  130.0
+fighter 1  Mario Bautista
+fighter 2  Jose Aldo
+winner  1
+predction: winner=0
+my winner prob  0.5110426494269502
+decimal odds  2.3
+Percent to bet  0.13492161052460416
+Bet  1.3492161052460416
+if i win, here is money back  1.7539809368198538
+money lost  -1.3492161052460416
+
+odd1  -120.0
+odd2  -110.0
+fighter 1  Iasmin Lucindo
+fighter 2  Marina Rodriguez
+winner  0
+predction: winner=0
+my winner prob  0.6490424729990547
+decimal odds  1.9090909090909092
+Percent to bet  0.2629891932980149
+Bet  2.629891932980149
+if i win, here is money back  2.390810848163772
+money won  2.390810848163772
+
+odd1  400.0
+odd2  -649.0
+fighter 1  Ketlen Vieira
+fighter 2  Kayla Harrison
+winner  1
+predction: winner=1
+my winner prob  0.5763125793389858
+decimal odds  5.0
+Percent to bet  0.4703907241737323
+Bet  4.703907241737323
+if i win, here is money back  18.81562896694929
+money won  18.81562896694929
+
+odd1  -535.0
+odd2  400.0
+fighter 1  Alex Pereira
+fighter 2  Khalil Rountree Jr
+winner  0
+predction: winner=1
+my winner prob  0.6622719051021478
+decimal odds  1.1869158878504673
+Percent to bet  -1.144573402601361
+bet is negative so don't bet, too risky  -11.44573402601361
+Bet  0
+if i win, here is money back  0.0
+money lost  0
+
+odd1  260.0
+odd2  -330.0
+fighter 1  Ovince Saint Preux
+fighter 2  Ryan Spann
+winner  0
+predction: winner=0
+my winner prob  0.5636940697805557
+decimal odds  1.303030303030303
+Percent to bet  -0.8761154999436107
+bet is negative so don't bet, too risky  -8.761154999436107
+Bet  0
+if i win, here is money back  0.0
+money won  0.0
+
+odd1  190.0
+odd2  -230.0
+fighter 1  Court McGee
+fighter 2  Tim Means
+winner  0
+predction: winner=0
+my winner prob  0.6629113174183985
+decimal odds  1.434782608695652
+Percent to bet  -0.1123926525192851
+bet is negative so don't bet, too risky  -1.123926525192851
+Bet  0
+if i win, here is money back  0.0
+money won  0.0
+
+odd1  130.0
+odd2  -175.0
+fighter 1  Julianna Pena
+fighter 2  Raquel Pennington
+winner  1
+predction: winner=1
+my winner prob  0.5929700305422946
+decimal odds  2.3
+Percent to bet  0.2798700540363673
+Bet  2.7987005403636727
+if i win, here is money back  3.6383107024727743
+money won  3.6383107024727743
+
+odd1  -150.0
+odd2  110.0
+fighter 1  Carla Esparza
+fighter 2  Tecia Pennington
+winner  1
+predction: winner=1
+my winner prob  0.6273664910409376
+decimal odds  1.6666666666666665
+Percent to bet  0.06841622760234378
+Bet  0.6841622760234378
+if i win, here is money back  0.45610818401562514
+money won  0.45610818401562514
+profit  27.876247797471667
+total_bet  18.23337509508107
+total profit  27.876247797471667

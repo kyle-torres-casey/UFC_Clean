@@ -91,7 +91,7 @@ def predict_fights(odds):
     return X_train_scaled, X_train, y_train, logreg, y_pred, X_test, y_test
 
 def find_bets(odds, fights, probabilities):
-    total_money = 100
+    total_money = 10
     bets = []
     profit = 0 #For fights that have happened
     winnings = [] #For fights that have happened
@@ -316,11 +316,11 @@ def main(event):
     fights['Fighter 2'] = fights['Fighter 2'].str.replace('.', '', regex=False)
     fights_event = fights[fights['Event'].str.contains(event, na=False)].copy()
     fights = fights[~fights['Event'].str.contains('UFC 307', na=False)]
+    # fights = fights[~fights['Event'].str.contains(event, na=False)]
     print("fights_event ", fights_event)
 
     # Get odds for newest fights
     odds = pd.read_csv("Data/ufc_combined_money_1004.csv", index_col=0)
-    # odds_event = odds[odds['Event'] == event].copy()
     odds_event = odds[odds['Event'].str.contains(event, na=False)].copy()
     odds_event = odds_event[['Fighter 1','Fighter 2','Fighter 1 Odds','Fighter 2 Odds']]
     print("odds_event ", odds_event)
@@ -367,7 +367,7 @@ def main(event):
 # Entry point of the script
 if __name__ == "__main__":
     # events = ['UFC ' + str(i) for i in range(200,270)] # total profit  708.3983954721688
-    events = ['UFC ' + str(i) for i in range(260,290)] # total profit  708.3983954721688
+    events = ['UFC ' + str(i) for i in range(307,308)] # total profit  708.3983954721688
     total_profit = 0
     total_bet = 0
     for event in events:

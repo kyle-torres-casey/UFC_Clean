@@ -1,0 +1,156 @@
+# Salt Lake City Regression
+actual winners  [0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1]
+probabilities  [0.04581586 0.81895989 0.78067913 0.01630819 0.15526608 0.51807549
+ 0.29029733 0.13807962 0.36691815 0.00737847 0.0064394 ]
+starting money  10
+
+odd1  -163.0
+odd2  120.0
+fighter 1  Kevin Holland
+fighter 2  Roman Dolidze
+winner  0
+predction: winner=0
+my winner prob  0.9541841400539676
+decimal odds  2.2
+Percent to bet  0.9160042567656073
+Bet  9.160042567656072
+if i win, here is money back  10.99205108118729
+money won  10.99205108118729
+
+odd1  -333.0
+odd2  250.0
+fighter 1  Cesar Almeida
+fighter 2  Ihor Potieria
+winner  0
+predction: winner=1
+my winner prob  0.8189598945670952
+decimal odds  1.3003003003003002
+Percent to bet  0.21609634347552187
+Bet  2.1609634347552187
+if i win, here is money back  0.6489379683949603
+money lost  -2.1609634347552187
+
+odd1  110.0
+odd2  -150.0
+fighter 1  Stephen Thompson
+fighter 2  Joaquin Buckley
+winner  1
+predction: winner=1
+my winner prob  0.7806791287444123
+decimal odds  2.1
+Percent to bet  0.5812965185120598
+Bet  5.812965185120598
+if i win, here is money back  6.394261703632658
+money won  6.394261703632658
+
+odd1  -175.0
+odd2  130.0
+fighter 1  Mario Bautista
+fighter 2  Jose Aldo
+winner  1
+predction: winner=0
+my winner prob  0.9836918125544354
+decimal odds  2.3
+Percent to bet  0.9711470529809242
+Bet  9.711470529809242
+if i win, here is money back  12.624911688752013
+money lost  -9.711470529809242
+
+odd1  -120.0
+odd2  -110.0
+fighter 1  Iasmin Lucindo
+fighter 2  Marina Rodriguez
+winner  0
+predction: winner=0
+my winner prob  0.8447339239391466
+decimal odds  1.9090909090909092
+Percent to bet  0.6739412402722078
+Bet  6.739412402722078
+if i win, here is money back  6.126738547929161
+money won  6.126738547929161
+
+odd1  400.0
+odd2  -649.0
+fighter 1  Ketlen Vieira
+fighter 2  Kayla Harrison
+winner  1
+predction: winner=1
+my winner prob  0.5180754856653739
+decimal odds  5.0
+Percent to bet  0.3975943570817173
+Bet  3.975943570817173
+if i win, here is money back  15.903774283268692
+money won  15.903774283268692
+
+odd1  -535.0
+odd2  400.0
+fighter 1  Alex Pereira
+fighter 2  Khalil Rountree Jr
+winner  0
+predction: winner=0
+my winner prob  0.7097026715767947
+decimal odds  5.0
+Percent to bet  0.6371283394709933
+Bet  6.371283394709933
+if i win, here is money back  25.485133578839733
+money won  25.485133578839733
+
+odd1  260.0
+odd2  -330.0
+fighter 1  Ovince Saint Preux
+fighter 2  Ryan Spann
+winner  0
+predction: winner=0
+my winner prob  0.8619203790634412
+decimal odds  1.303030303030303
+Percent to bet  0.40625762997279713
+Bet  4.062576299727971
+if i win, here is money back  1.2310837271902946
+money won  1.2310837271902946
+
+odd1  190.0
+odd2  -230.0
+fighter 1  Court McGee
+fighter 2  Tim Means
+winner  0
+predction: winner=0
+my winner prob  0.6330818543589345
+decimal odds  1.434782608695652
+Percent to bet  -0.21082988061551633
+bet is negative so don't bet, too risky  -2.1082988061551635
+Bet  0
+if i win, here is money back  0.0
+money won  0.0
+
+odd1  130.0
+odd2  -175.0
+fighter 1  Julianna Pena
+fighter 2  Raquel Pennington
+winner  1
+predction: winner=0
+my winner prob  0.9926215293161574
+decimal odds  1.5714285714285714
+Percent to bet  0.979709205619433
+Bet  9.79709205619433
+if i win, here is money back  5.5983383178253305
+money lost  -9.79709205619433
+
+odd1  -150.0
+odd2  110.0
+fighter 1  Carla Esparza
+fighter 2  Tecia Pennington
+winner  1
+predction: winner=0
+my winner prob  0.9935606049320207
+decimal odds  2.1
+Percent to bet  0.9877066094156759
+Bet  9.87706609415676
+if i win, here is money back  10.864772703572438
+money lost  -9.87706609415676
+profit  34.58645080713228
+total_bet  67.66881553566938
+total profit  34.58645080713228
+
+
+#-----------
+
