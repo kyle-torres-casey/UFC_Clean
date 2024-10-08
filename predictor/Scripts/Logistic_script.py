@@ -138,7 +138,6 @@ def find_bets(odds, fights, probabilities):
 
         print("if i win, here is money back ", bet*dec_odds - bet)
 
-
         ### Only use this for fights that have HAPPENED
         if my_winner == fights['Winner'].to_list()[i]:
             money_won = bet*dec_odds - bet
@@ -222,10 +221,10 @@ def edit_data(fights):
     cols_to_drop = [f"{stat} 1" for stat in stats] + [f"{stat} 2" for stat in stats]
     fights.drop(columns=cols_to_drop, inplace=True)
 
-    fights.drop('DEC Avg 1', axis=1, inplace=True)
-    fights.drop('DEC Opp Avg 1', axis=1, inplace=True)
-    fights.drop('DEC Avg 2', axis=1, inplace=True)
-    fights.drop('DEC Opp Avg 2', axis=1, inplace=True)
+    # fights.drop('DEC Avg 1', axis=1, inplace=True)
+    # fights.drop('DEC Opp Avg 1', axis=1, inplace=True)
+    # fights.drop('DEC Avg 2', axis=1, inplace=True)
+    # fights.drop('DEC Opp Avg 2', axis=1, inplace=True)
 
     fights.drop('Date', axis=1, inplace=True)
     # fights.drop('Fighter 1 Odds', axis=1, inplace=True)
@@ -309,14 +308,13 @@ def main(event):
     # fights.drop('Unnamed: 0', axis=1, inplace=True)
 
     # Separate new fights
-    fights = pd.read_csv("Data/ufc_combined_1004.csv", index_col=0)
+    fights = pd.read_csv("Data/ufc_combined_1008.csv", index_col=0)
     fights['Fighter 1'] = fights['Fighter 1'].str.replace('-', ' ', regex=False)
     fights['Fighter 2'] = fights['Fighter 2'].str.replace('-', ' ', regex=False)
     fights['Fighter 1'] = fights['Fighter 1'].str.replace('.', '', regex=False)
     fights['Fighter 2'] = fights['Fighter 2'].str.replace('.', '', regex=False)
     fights_event = fights[fights['Event'].str.contains(event, na=False)].copy()
-    fights = fights[~fights['Event'].str.contains('UFC 307', na=False)]
-    # fights = fights[~fights['Event'].str.contains(event, na=False)]
+    fights = fights[~fights['Event'].str.contains(event, na=False)]
     print("fights_event ", fights_event)
 
     # Get odds for newest fights

@@ -175,8 +175,6 @@ def initialize_columns(fighter_df):
     return fighter_df
 
 def initialize_running_stats(fighter_df):
-    # if fighter_df['NAme'] == 'Nah-Shon Burrell':
-    #     print(fighter_df)
     running_stats = {
         "wins": 0.0,  
         "losses": 0.0,
@@ -258,7 +256,6 @@ def update_physical(i, fighter_df, more_fighter_stats, fighter):
             if np.isnan(ht):
                 print(f"Empty value for height for fighter: {fighter}")
 
-        #Reach
         # Get opponent's reach and fighter's reach as scalar values
         opponent_reach = opponent_row['Reach'].values[0] if not opponent_row['Reach'].isna().all() else '--'
         reach = fighter_df.iloc[i]['Reach'] if not pd.isna(fighter_df.iloc[i]['Reach']) else '--'
@@ -418,8 +415,8 @@ def update_strike(i, fighter_df, running_stats):
             else:
                 running_stats['str_percentage_2'] = (running_stats['running_strikes_2'] / running_stats['running_attempted_strikes_2']) * 100
 
-            fighter_df.loc[fighter_df.index[i + 1], 'Strikes Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_strikes_2']/running_stats['fights']
-            fighter_df.loc[fighter_df.index[i + 1], 'Str %'] = running_stats['str_percentage_2']
+            fighter_df.loc[fighter_df.index[i + 1], 'Strikes Opp Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_strikes_2']/running_stats['fights']
+            fighter_df.loc[fighter_df.index[i + 1], 'Str % Opp'] = running_stats['str_percentage_2']
     
     return fighter_df, running_stats
 
@@ -447,8 +444,8 @@ def update_td(i, fighter_df, running_stats):
             else:
                 running_stats['td_percentage_2'] = (running_stats['running_td_2'] / running_stats['running_attempted_td_2']) * 100
 
-            fighter_df.loc[fighter_df.index[i + 1], 'TD Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_td_2']/running_stats['fights']
-            fighter_df.loc[fighter_df.index[i + 1], 'TD %'] = running_stats['td_percentage_2']
+            fighter_df.loc[fighter_df.index[i + 1], 'TD Opp Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_td_2']/running_stats['fights']
+            fighter_df.loc[fighter_df.index[i + 1], 'TD % Opp'] = running_stats['td_percentage_2']
     
     return fighter_df, running_stats
 
@@ -742,7 +739,7 @@ def main():
 
     # Back to processing before analysis
     bouts = prepare_data_for_analysis(combined_df)
-    bouts.to_csv("Data/ufc_combined_1004_2.csv")
+    bouts.to_csv("Data/ufc_combined_1008.csv")
 
 if __name__ == "__main__":
     main()
