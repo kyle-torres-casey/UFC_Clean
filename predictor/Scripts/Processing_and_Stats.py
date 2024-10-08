@@ -183,9 +183,9 @@ def initialize_running_stats(fighter_df):
 
         # Sig Strikes
         "running_sig_strikes_1": 0.0,
-        "running_attempted_strikes_1": 0.0,
+        "running_attempted_sig_strikes_1": 0.0,
         "running_sig_strikes_2": 0.0,
-        "running_attempted_strikes_2": 0.0,
+        "running_attempted_sig_strikes_2": 0.0,
 
         # Total Strikes
         "running_strikes_1": 0.0,
@@ -368,22 +368,22 @@ def update_sig_strike(i, fighter_df, running_stats):
 
         if j == 1:
             running_stats['running_sig_strikes_1'] += strikes
-            running_stats['running_attempted_strikes_1'] += attempts
-            if running_stats['running_attempted_strikes_1'] == 0:
+            running_stats['running_attempted_sig_strikes_1'] += attempts
+            if running_stats['running_attempted_sig_strikes_1'] == 0:
                 running_stats['sig_str_percentage_1'] = 0
             else:
-                running_stats['sig_str_percentage_1'] = (running_stats['running_sig_strikes_1'] / running_stats['running_attempted_strikes_1']) * 100
+                running_stats['sig_str_percentage_1'] = (running_stats['running_sig_strikes_1'] / running_stats['running_attempted_sig_strikes_1']) * 100
 
             fighter_df.loc[fighter_df.index[i + 1], 'Sig Strikes Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_sig_strikes_1']/running_stats['fights']
             fighter_df.loc[fighter_df.index[i + 1], 'Sig Str %'] = running_stats['sig_str_percentage_1']
 
         elif j == 2:
             running_stats['running_sig_strikes_2'] += strikes
-            running_stats['running_attempted_strikes_2'] += attempts
-            if running_stats['running_attempted_strikes_2'] == 0:
+            running_stats['running_attempted_sig_strikes_2'] += attempts
+            if running_stats['running_attempted_sig_strikes_2'] == 0:
                 running_stats['sig_str_percentage_2'] = 0
             else:
-                running_stats['sig_str_percentage_2'] = (running_stats['running_sig_strikes_2'] / running_stats['running_attempted_strikes_2']) * 100
+                running_stats['sig_str_percentage_2'] = (running_stats['running_sig_strikes_2'] / running_stats['running_attempted_sig_strikes_2']) * 100
 
             fighter_df.loc[fighter_df.index[i + 1], 'Sig Strikes Opp Avg'] = 0.0 if running_stats['fights']==0.0 else running_stats['running_sig_strikes_2']/running_stats['fights']
             fighter_df.loc[fighter_df.index[i + 1], 'Sig Str % Opp'] = running_stats['sig_str_percentage_2']
@@ -496,15 +496,11 @@ def create_new_stats(fighter_dfs, more_fighter_stats):
         # print("fighter ", fighter)
         fighter_df = fighter_dfs[fighter]
 
-        # print("before initialize_columns ", fighter_df.columns)
         # Initialize all the new values with zeros
         fighter_df = initialize_columns(fighter_df)
 
-        # print("after initialize_columns ", fighter_df.columns)
-
+        # Intitialize running stats
         running_stats = initialize_running_stats(fighter_df)
-
-        # print("after initialize_running_stats ", fighter_df.columns)
 
         for i in range(len(fighter_df)):
             ### Update Stats
