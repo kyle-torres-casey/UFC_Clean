@@ -706,7 +706,6 @@ def main():
     fighters = pd.read_csv("Data/fighters_0927.csv")
     bouts_clean = pd.read_csv("Data/bouts_0929_with_307.csv")
 
-    # Remove duplicate rows
     # fighters = fighters.drop_duplicates(subset=fighters.columns) 
     # bouts_clean = bouts_clean.drop_duplicates(subset=bouts_clean.columns)
 
