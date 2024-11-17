@@ -149,9 +149,9 @@ def create_fighter_dictionaries(bouts_clean, unique_fighters, more_fighter_stats
             # Store the updated DataFrame in the dictionary
             fighter_dfs[fighter] = fighter_df
 
-        if fighter == 'Valter Walker':
+        if fighter == 'Cesar Almeida':
             print(fighter_df)
-            fighter_df.to_csv("Data/valter.csv")
+            fighter_df.to_csv("Data/CesarAlmeida.csv")
         
     return fighter_dfs
 
@@ -301,9 +301,9 @@ def update_streak(i, fighter_df, running_stats):
 
 def update_career_win_loss(i, fighter_df, running_stats):
     # Iteratively go back and solve total career stats
-    if fighter_df.iloc[len(fighter_df) - 1 - i]['W/L 1']=='win':
+    if fighter_df.iloc[len(fighter_df) - 1 - i]['W/L 1'] == 'win':
         running_stats['career_w'] -= 1
-    else:
+    elif fighter_df.iloc[len(fighter_df) - 1 - i]['W/L 1'] != 'win' and not pd.isna(fighter_df.iloc[len(fighter_df) - 1 - i]['W/L 2']):
         running_stats['career_l'] -= 1
 
     fighter_df.loc[fighter_df.index[len(fighter_df) - 1 - i], 'Career W'] = running_stats['career_w']
@@ -318,8 +318,7 @@ def update_career_win_loss(i, fighter_df, running_stats):
 
 def update_win_loss(i, fighter_df, running_stats):
     ### Update for W, L, Num Fights, and W Perc
-    result = fighter_df.iloc[i]['W/L 1']  # Assuming 'W/L 1' is the column that has 'W', 'L', or 'NC'
-    if result == 'win':
+    if fighter_df.iloc[i]['W/L 1'] == 'win':
         running_stats['wins'] += 1
     else:
         running_stats['losses'] += 1
@@ -528,9 +527,9 @@ def create_new_stats(fighter_dfs, more_fighter_stats):
         # Add df to dictionary
         fighter_dfs[fighter] = fighter_df
 
-        if fighter == 'Valter Walker':
+        if fighter == 'Cesar Almeida':
             print(fighter_df)
-            fighter_df.to_csv("Data/valter_new_stats.csv")
+            fighter_df.to_csv("Data/CesarAlmeida_new_stats.csv")
     
     return fighter_dfs
 
@@ -735,7 +734,7 @@ def main():
 
     # Back to processing before analysis
     bouts = prepare_data_for_analysis(combined_df)
-    bouts.to_csv("Data/ufc_combined_1008.csv")
+    bouts.to_csv("Data/ufc_combined_1008_3.csv")
 
 if __name__ == "__main__":
     main()
